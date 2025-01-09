@@ -1,0 +1,10 @@
+{
+    "[go]": {
+        "editor.insertSpaces": true,
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "golang.go"
+    },
+    "workbench.colorCustomizations": {
+            "activityBar.background": "#042a01"
+    },
+}

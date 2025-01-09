@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="../src/calendar.css">
+  </head>
+<body>
+<div class="weeks">
+  {{ range .Weeks }}
+    <div class="week {{ if .IsFirst }}first-week{{ end }} {{ if .IsLast }}last-week{{ end }}">
+    {{ range .Days }}
+      <div class="day {{ if .MonthBoundaryRight }}month-boundary-right{{ end }} {{ if .MonthBoundaryBottom }}month-boundary-bottom{{ end }} {{ if .IsToday }}today{{ end }}">
+        <div class="day-number-container">
+          <div class="day-number">{{ .Date.Format "2" }}</div>
+        </div>
+        <div class="events">
+          {{ range .Events }}
+            <div class="event">
+              {{ .Summary }}
+            </div>
+          {{ end }}
+        </div>
+      </div>
+    {{ end }}
+    </div>
+  {{ end }}
+</div>
+</body>
+</html>

@@ -1,0 +1,115 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+@font-face {
+    font-family: Hand;
+    src: url("AlexandriaWhitehouse.otf") format("opentype");
+}
+
+body {
+    margin: 0px;
+    background-color: #f5efe7;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.weeks {
+    width: 100%;
+    padding: 10px;
+}
+
+.week {
+    display: flex;
+}
+
+.day {
+    width: calc(100% / 7);
+    min-height: 100px;
+    border-style: solid;
+    border-color: transparent;
+    border-right-color: #eee5df;
+    border-top-color: #eee5df;
+    padding: 8px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.day-number-container {
+    align-self: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 100px;
+    width: 20px;
+    height: 20px;
+}
+
+.day-number {
+    font-size: 18px;
+    line-height: 18px;
+}
+
+.today > .day-number-container {
+    background-color: #907f6b;
+    color: #eee5df;
+    text-align: center;
+}
+
+.events {
+    margin-top: 5px;
+}
+
+.event {
+    font-size: 12px;
+    color: #162990;
+    font-family: Hand;
+    line-height: 10px;
+}
+
+.day:nth-child(6),
+.day:nth-child(7) {
+    background-color: #f0e5de;
+    border-right-color: #ded5cf;
+    border-top-color: #ded5cf;
+}
+
+.day:first-child {
+    border-left-color: #eee5df;
+}
+
+.week:last-child > .day {
+    border-bottom-color: #eee5df;
+}
+
+.day.month-boundary-right {
+    border-right: 2px dotted #ceae98;
+}
+
+.day.month-boundary-bottom {
+    border-bottom: 2px dotted #ceae98;
+}
+
+
+.week:first-child > .day:first-child {
+    border-top-left-radius: 8px;
+}
+
+.week:first-child > .day:last-child {
+    border-top-right-radius: 8px;
+}
+
+.week:last-child > .day:first-child {
+    border-bottom-left-radius: 8px;
+}
+
+.week:last-child > .day:last-child {
+    border-bottom-right-radius: 8px;
+}
+
+

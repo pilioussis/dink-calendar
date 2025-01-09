@@ -1,0 +1,5 @@
+services:
+  dink:
+    build: ./
+    volumes:
+        - ./:/code
