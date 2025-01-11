@@ -1,3 +1,15 @@
+:root {
+    --border-light: #1f47ad;
+    --border-weekend: #9a0f0f;
+    --border-month: #0e2d24;
+    --today-background: #8c060b;
+    --today-text: #fff;
+    --day-text: #0c191d;
+    --pen-color: #141c35;
+
+    --corder-radius: 2px;
+}
+
 *,
 *::before,
 *::after {
@@ -16,11 +28,16 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    background-image: url("paper.jpg");
+    background-size: cover;
+    background-repeat: repeat;
+    background-color: #cccccc;
 }
 
 .weeks {
     width: 100%;
     padding: 10px;
+    mix-blend-mode: color-burn;
 }
 
 .week {
@@ -29,11 +46,13 @@ body {
 
 .day {
     width: calc(100% / 7);
-    min-height: 100px;
+    min-height: 150px;
+    border-left-width: 0px;
+    border-bottom-width: 1px;
     border-style: solid;
     border-color: transparent;
-    border-right-color: #eee5df;
-    border-top-color: #eee5df;
+    border-right-color: var(--border-light);
+    border-top-color: var(--border-light);
     padding: 8px;
 
     display: flex;
@@ -46,19 +65,26 @@ body {
     align-items: center;
     justify-content: center;
     border-radius: 100px;
-    width: 20px;
-    height: 20px;
+    width: 36px;
+    height: 36px;
 }
 
 .day-number {
-    font-size: 18px;
-    line-height: 18px;
+    font-size: 24px;
+    font-family: 'Courier New';
+    color: var(--day-text);
+    text-align: center;
 }
 
 .today > .day-number-container {
-    background-color: #907f6b;
-    color: #eee5df;
-    text-align: center;
+    box-shadow: #ff0000 .5px .3px;
+    border: 1px solid #540f0f;
+    background-color: var(--today-background);
+}
+
+.today .day-number {
+    color: var(--today-text);
+
 }
 
 .events {
@@ -66,50 +92,53 @@ body {
 }
 
 .event {
-    font-size: 12px;
-    color: #162990;
-    font-family: Hand;
-    line-height: 10px;
+    font-size: 18px;
+    color: var(--pen-color);
+    font-family: 'Courier New';
+    font-weight: 600;
+    line-height: 15px;
 }
 
-.day:nth-child(6),
-.day:nth-child(7) {
-    background-color: #f0e5de;
-    border-right-color: #ded5cf;
-    border-top-color: #ded5cf;
+.day:nth-child(5),
+.day:nth-child(5) {
+    /* background-color: #f0e5de; */
+    border-right-color: var(--border-weekend);
+    border-right-width: 2px;
+    /* border-top-color: var(--border-weekend); */
 }
 
 .day:first-child {
-    border-left-color: #eee5df;
+    border-left-color: var(--border-light);
+    border-left-width: 1px;
 }
 
 .week:last-child > .day {
-    border-bottom-color: #eee5df;
+    border-bottom-color: var(--border-light);
 }
 
 .day.month-boundary-right {
-    border-right: 2px dotted #ceae98;
+    border-right: 2.8px solid var(--border-month);
 }
 
-.day.month-boundary-bottom {
-    border-bottom: 2px dotted #ceae98;
+.day.month-boundary-top {
+    border-top: 2.8px solid var(--border-month);
 }
 
 
 .week:first-child > .day:first-child {
-    border-top-left-radius: 8px;
+    border-top-left-radius: var(--corder-radius);
 }
 
 .week:first-child > .day:last-child {
-    border-top-right-radius: 8px;
+    border-top-right-radius: var(--corder-radius);
 }
 
 .week:last-child > .day:first-child {
-    border-bottom-left-radius: 8px;
+    border-bottom-left-radius: var(--corder-radius);
 }
 
 .week:last-child > .day:last-child {
-    border-bottom-right-radius: 8px;
+    border-bottom-right-radius: var(--corder-radius);
 }
 
 

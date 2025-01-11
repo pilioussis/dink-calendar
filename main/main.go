@@ -12,11 +12,11 @@ import (
 )
 
 type Day struct {
-	Date                time.Time
-	MonthBoundaryRight  bool
-	MonthBoundaryBottom bool
-	IsToday             bool
-	Events              []*calendar.Event
+	Date               time.Time
+	MonthBoundaryRight bool
+	MonthBoundaryTop   bool
+	IsToday            bool
+	Events             []*calendar.Event
 }
 
 type Week struct {
@@ -124,9 +124,9 @@ func generateCalendar() Calendar {
 				}
 			}
 			// Check vertical boundary
-			if w < len(weeks)-1 {
-				if weeks[w].Days[d].Date.Month() != weeks[w+1].Days[d].Date.Month() {
-					weeks[w].Days[d].MonthBoundaryBottom = true
+			if w > 0 {
+				if weeks[w].Days[d].Date.Month() != weeks[w-1].Days[d].Date.Month() {
+					weeks[w].Days[d].MonthBoundaryTop = true
 				}
 			}
 		}
