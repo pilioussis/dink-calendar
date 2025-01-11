@@ -17,6 +17,7 @@ type Day struct {
 	MonthBoundaryTop   bool
 	IsToday            bool
 	Events             []*calendar.Event
+	MonthLabel         string
 }
 
 type Week struct {
@@ -29,7 +30,7 @@ type Calendar struct {
 	Weeks []Week
 }
 
-const NUM_WEEKS = 10
+const NUM_WEEKS = 14
 
 func sameDayRFC3339(a time.Time, b, tz string) (bool, error) {
 	if b == "" {
@@ -100,10 +101,15 @@ func generateCalendar() Calendar {
 					}
 				},
 			)
+			monthLabel := ""
+			if day.Day() == 1 {
+				monthLabel = day.Format("Jan")
+			}
 			days = append(days, Day{
-				Date:    day,
-				IsToday: day == now,
-				Events:  dayEvents,
+				Date:       day,
+				IsToday:    day == now,
+				Events:     dayEvents,
+				MonthLabel: monthLabel,
 			})
 			day = day.AddDate(0, 0, 1)
 		}

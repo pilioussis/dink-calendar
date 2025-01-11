@@ -1,8 +1,8 @@
 :root {
-    --border-light: #1f47ad;
+    --blue-grid-light: #4869be;
     --border-weekend: #9a0f0f;
-    --border-month: #0e2d24;
-    --today-background: #8c060b;
+    --month-color: #0f513e;
+    --today-background: #7a0f25;
     --today-text: #fff;
     --day-text: #0c191d;
     --pen-color: #141c35;
@@ -14,6 +14,7 @@
 *::before,
 *::after {
   box-sizing: border-box;
+  display: flex;
 }
 
 @font-face {
@@ -38,10 +39,25 @@ body {
     width: 100%;
     padding: 10px;
     mix-blend-mode: color-burn;
+    flex-direction: column;
 }
 
 .week {
-    display: flex;
+    padding-left: 1px;
+    border-left: 2px solid var(--blue-grid-light);
+    padding-right: 1px;
+    border-right: 2px solid var(--blue-grid-light);
+    border-radius: 3px;
+}
+
+.week:first-child {
+    padding-top: 1px;
+    border-top: 2px solid var(--blue-grid-light);
+}
+
+.week:last-child {
+    padding-bottom: 1px;
+    border-bottom: 2px solid var(--blue-grid-light);
 }
 
 .day {
@@ -51,12 +67,31 @@ body {
     border-bottom-width: 1px;
     border-style: solid;
     border-color: transparent;
-    border-right-color: var(--border-light);
-    border-top-color: var(--border-light);
+    border-right-color: var(--blue-grid-light);
+    border-top-color: var(--blue-grid-light);
     padding: 8px;
 
     display: flex;
     flex-direction: column;
+}
+
+.month-label-container {
+    position: relative;
+    top: 0px;
+    width: 0px;
+    height: 0px;
+}
+
+.month-label {
+    font-family: 'American Typewriter';
+    font-size: 17px;
+    line-height: 17px;
+    font-weight: 600;
+    color: var(--month-color);
+    position: absolute;
+    border: 2px solid var(--month-color);
+    border-radius: 2px;
+    padding: 0px 5px;
 }
 
 .day-number-container {
@@ -66,7 +101,7 @@ body {
     justify-content: center;
     border-radius: 100px;
     width: 36px;
-    height: 36px;
+    height: 24px;
 }
 
 .day-number {
@@ -89,6 +124,7 @@ body {
 
 .events {
     margin-top: 5px;
+    margin-left: 0px;
 }
 
 .event {
@@ -99,7 +135,6 @@ body {
     line-height: 15px;
 }
 
-.day:nth-child(5),
 .day:nth-child(5) {
     /* background-color: #f0e5de; */
     border-right-color: var(--border-weekend);
@@ -108,20 +143,20 @@ body {
 }
 
 .day:first-child {
-    border-left-color: var(--border-light);
+    border-left-color: var(--blue-grid-light);
     border-left-width: 1px;
 }
 
 .week:last-child > .day {
-    border-bottom-color: var(--border-light);
+    border-bottom-color: var(--blue-grid-light);
 }
 
 .day.month-boundary-right {
-    border-right: 2.8px solid var(--border-month);
+    border-right: 2.8px solid var(--month-color);
 }
 
 .day.month-boundary-top {
-    border-top: 2.8px solid var(--border-month);
+    border-top: 2.8px solid var(--month-color);
 }
 
 

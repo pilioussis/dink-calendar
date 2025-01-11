@@ -6,9 +6,14 @@
 <body>
   <div class="weeks">
     {{ range .Weeks }}
-      <div class="week {{ if .IsFirst }}first-week{{ end }} {{ if .IsLast }}last-week{{ end }}">
+      <div class="week">
       {{ range .Days }}
         <div class="day {{ if .MonthBoundaryRight }}month-boundary-right{{ end }} {{ if .MonthBoundaryTop }}month-boundary-top{{ end }} {{ if .IsToday }}today{{ end }}">
+          {{ if .MonthLabel }}
+            <div class="month-label-container">
+              <div class="month-label">{{ .MonthLabel }}</div>
+            </div>
+          {{ end }}
           <div class="day-number-container">
             <div class="day-number">{{ .Date.Format "2" }}</div>
           </div>
