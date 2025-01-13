@@ -6,10 +6,16 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	calendar "google.golang.org/api/calendar/v3"
 )
+
+type SameDayEvent struct {
+	Event     *calendar.Event
+	StartDate time.Time
+}
 
 type MultiDayEvent struct {
 	Event     *calendar.Event
@@ -23,7 +29,7 @@ type Day struct {
 	MonthBoundaryRight bool
 	MonthBoundaryTop   bool
 	IsToday            bool
-	SameDayEvents      []*calendar.Event
+	SameDayEvents      []*SameDayEvent
 	MultiDayEvents     []*MultiDayEvent
 	MonthLabel         string
 }
@@ -35,7 +41,8 @@ type Week struct {
 }
 
 type Calendar struct {
-	Weeks []Week
+	Weeks    []Week
+	Timezone string
 }
 
 const NUM_WEEKS = 52
@@ -70,18 +77,18 @@ func getMapKey(t time.Time) string {
 }
 
 type DayEvents struct {
-	SameDay  []*calendar.Event
+	SameDay  []*SameDayEvent
 	MultiDay []*MultiDayEvent
 }
 
 func getEventsForDays(events *calendar.Events) map[string]*DayEvents {
 	days := make(map[string]*DayEvents)
 
+	lowestFreeSpot := make(map[int]time.Time)
+
 	for _, e := range events.Items {
 		start := getTimeFromString(e.Start.DateTime, e.Start.Date)
 		end := getTimeFromString(e.End.DateTime, e.End.Date)
-
-		fmt.Printf("%#v -- %#v %s %s %#v\n", start, end, e.End.Date, e.End.DateTime, e.Summary)
 
 		y1, m1, d1 := start.Date()
 		y2, m2, d2 := end.Date()
@@ -94,20 +101,44 @@ func getEventsForDays(events *calendar.Events) map[string]*DayEvents {
 				v = &DayEvents{}
 				days[getMapKey(start)] = v
 			}
-			v.SameDay = append(v.SameDay, e)
+			v.SameDay = append(v.SameDay, &SameDayEvent{Event: e, StartDate: start})
 		} else {
 			end = end.Add(-time.Duration(24) * time.Hour) // google does exclusive days
+
+			for pos, t := range lowestFreeSpot {
+				if start.After(t) {
+					delete(lowestFreeSpot, pos)
+				}
+			}
+			lowest := -1
+			for i := range 10 {
+				if _, ok := lowestFreeSpot[i]; !ok {
+					lowest = i
+					break
+				}
+			}
+
+			lowestFreeSpot[lowest] = end
+
+			for pos, t := range lowestFreeSpot {
+				fmt.Print("   ", pos, t, "\n")
+			}
+			// fmt.Print("lowest", lowest, "\n")
+
 			for current := start; !current.After(end); current = current.AddDate(0, 0, 1) {
 				v, ok := days[getMapKey(current)]
 				if !ok {
 					v = &DayEvents{}
 					days[getMapKey(current)] = v
 				}
+				if len(e.Summary) < 25 {
+					e.Summary = e.Summary + strings.Repeat("-", 25-len(e.Summary))
+				}
 				v.MultiDay = append(v.MultiDay, &MultiDayEvent{
 					Event:     e,
 					StartDate: start,
 					EndDate:   end,
-					Position:  0,
+					Position:  lowest,
 				})
 			}
 		}
@@ -179,11 +210,10 @@ func generateCalendar() Calendar {
 		}
 	}
 
-	return Calendar{Weeks: weeks}
+	return Calendar{Weeks: weeks, Timezone: TZ}
 }
 
 func isSameDate(t1, t2 time.Time) bool {
-	fmt.Printf("%#v %#v\n", t1, t2)
 	y1, m1, d1 := t1.Date()
 	y2, m2, d2 := t2.Date()
 	return y1 == y2 && m1 == m2 && d1 == d2
@@ -218,8 +248,7 @@ func CreateCalendarHTML() error {
 func main() {
 	err := CreateCalendarHTML()
 	if err != nil {
-		fmt.Print(err)
-		return
+		log.Panicf("Error creating HTML: %v", err)
 	}
 
 	cmd := exec.Command(
