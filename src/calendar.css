@@ -6,6 +6,7 @@
     --today-text: #fff;
     --day-text: #0c191d;
     --pen-color: #141c35;
+    --multi-day-color: #06255e;
 
     --corder-radius: 2px;
 }
@@ -34,13 +35,13 @@ body {
     background-size: cover;
     background-repeat: repeat;
     background-color: #cccccc;
+    font-family: 'Courier New';
 }
 
 .weeks {
     width: 100%;
     padding: 10px;
     mix-blend-mode: color-burn;
-    flex-direction: column;
 }
 
 .week {
@@ -73,8 +74,7 @@ body {
     border-top-color: var(--blue-grid-light);
     padding: 6px;
 
-    display: flex;
-    flex-direction: column;
+    justify-content: space-between;
 }
 
 .month-label-container {
@@ -85,7 +85,6 @@ body {
 }
 
 .month-label {
-    font-family: 'American Typewriter';
     font-size: 17px;
     line-height: 17px;
     font-weight: 600;
@@ -108,7 +107,6 @@ body {
 
 .day-number {
     font-size: 24px;
-    font-family: 'Courier New';
     color: var(--day-text);
     text-align: center;
 }
@@ -124,23 +122,46 @@ body {
 
 }
 
-.events {
+.same-day-events {
     margin-top: 5px;
     margin-left: 0px;
     flex-direction: column;
 }
 
-.event {
+.same-day-event {
     color: var(--pen-color);
-    font-family: 'Courier New';
     font-weight: 600;
     font-size: 17.5px;
     line-height: 15.5px;
     flex-direction: row;
 }
 
-.event:not(:first-child) {
+.same-day-event:not(:first-child) {
     margin-top: 7px
+}
+
+.multi-day-events {
+    font-weight: 600;
+    width: 100%;
+    color: var(--multi-day-color);
+    white-space: nowrap;
+    height: 12px
+}
+
+.multi-day-event-name {
+    position: absolute;
+    z-index: 2;
+    background-color: white;
+}
+
+.multi-day-event-cont {
+    position: absolute;
+    z-index: 1;
+}
+
+.multi-day-event-end {
+    position: absolute;
+    z-index: 1;
 }
 
 .day:nth-child(5) {

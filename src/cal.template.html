@@ -7,21 +7,34 @@
   <div class="weeks">
     {{ range .Weeks }}
       <div class="week">
-      {{ range .Days }}
+      {{ range $day := .Days }}
         <div class="day {{ if .MonthBoundaryRight }}month-boundary-right{{ end }} {{ if .MonthBoundaryTop }}month-boundary-top{{ end }} {{ if .IsToday }}today{{ end }}">
-          {{ if .MonthLabel }}
-            <div class="month-label-container">
-              <div class="month-label">{{ .MonthLabel }}</div>
-            </div>
-          {{ end }}
-          <div class="day-number-container">
-            <div class="day-number">{{ .Date.Format "2" }}</div>
-          </div>
-          <div class="events">
-            {{ range .Events }}
-              <div class="event">
-                {{ .Summary }}
+          <div class="day-top-content">
+            {{ if .MonthLabel }}
+              <div class="month-label-container">
+                <div class="month-label">{{ $day.MonthLabel }}</div>
               </div>
+            {{ end }}
+            <div class="day-number-container">
+              <div class="day-number">{{ $day.Date.Format "2" }}</div>
+            </div>
+            <div class="same-day-events">
+              {{ range $day.SameDayEvents }}
+                <div class="same-day-event">
+                  {{ .Summary }}
+                </div>
+              {{ end }}
+            </div>
+          </div>
+          <div class="multi-day-events">
+            {{ range $day.MultiDayEvents }}
+              {{ if isSameDate $day.Date .StartDate }}
+                <div class="multi-day-event-name">{{ .Event.Summary }}</div>
+              {{ else if isSameDate $day.Date .EndDate }}
+                <div class="multi-day-event-cont">----------------------|</div>
+              {{ else }}
+                <div class="multi-day-event-end">-------------------------</div>
+              {{ end }}
             {{ end }}
           </div>
         </div>

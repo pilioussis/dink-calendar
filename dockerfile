@@ -10,7 +10,8 @@ RUN wget https://go.dev/dl/go1.23.0.linux-arm64.tar.gz
 RUN tar -xzf go1.23.0.linux-arm64.tar.gz
 RUN mv go /usr/local
 ENV PATH="$PATH:/usr/local/go/bin"
-RUN go mod download
 
 WORKDIR /code
+RUN cd /code && go mod tidy
+
 

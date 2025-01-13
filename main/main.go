@@ -3,20 +3,28 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"log"
 	"os"
 	"os/exec"
-	"slices"
 	"time"
 
 	calendar "google.golang.org/api/calendar/v3"
 )
+
+type MultiDayEvent struct {
+	Event     *calendar.Event
+	StartDate time.Time
+	EndDate   time.Time
+	Position  int
+}
 
 type Day struct {
 	Date               time.Time
 	MonthBoundaryRight bool
 	MonthBoundaryTop   bool
 	IsToday            bool
-	Events             []*calendar.Event
+	SameDayEvents      []*calendar.Event
+	MultiDayEvents     []*MultiDayEvent
 	MonthLabel         string
 }
 
@@ -32,26 +40,80 @@ type Calendar struct {
 
 const NUM_WEEKS = 52
 
-func sameDayRFC3339(a time.Time, b, tz string) (bool, error) {
-	if b == "" {
-		return false, nil
-	}
-	loc, err := time.LoadLocation(tz)
+const TZ = "Australia/Melbourne"
+
+func getTimeFromString(dateTimeString string, dateString string) time.Time {
+	loc, err := time.LoadLocation(TZ)
 	if err != nil {
-		return false, err
+		log.Panicf("Error loading location: %s", TZ)
+	}
+	if dateTimeString != "" {
+		t, err := time.ParseInLocation(time.RFC3339, dateTimeString, loc)
+		if err != nil {
+			log.Panicf("Error loading dateTimeString: %+v", dateTimeString)
+		}
+		return t
 	}
 
-	t1 := a
-	t2, err := time.Parse(time.RFC3339, b)
+	if dateString != "" {
+		t, err := time.ParseInLocation(time.DateOnly, dateString, loc)
+		if err != nil {
+			log.Panicf("Error loading dateString: %+v", dateString)
+		}
+		return t
+	}
+	panic("Both date strings empty")
+}
 
-	if err != nil {
-		return false, err
+func getMapKey(t time.Time) string {
+	return t.Format("2006-01-02")
+}
+
+type DayEvents struct {
+	SameDay  []*calendar.Event
+	MultiDay []*MultiDayEvent
+}
+
+func getEventsForDays(events *calendar.Events) map[string]*DayEvents {
+	days := make(map[string]*DayEvents)
+
+	for _, e := range events.Items {
+		start := getTimeFromString(e.Start.DateTime, e.Start.Date)
+		end := getTimeFromString(e.End.DateTime, e.End.Date)
+
+		fmt.Printf("%#v -- %#v %s %s %#v\n", start, end, e.End.Date, e.End.DateTime, e.Summary)
+
+		y1, m1, d1 := start.Date()
+		y2, m2, d2 := end.Date()
+
+		sameDay := (y1 == y2 && m1 == m2 && d1 == d2)
+
+		if sameDay {
+			v, ok := days[getMapKey(start)]
+			if !ok {
+				v = &DayEvents{}
+				days[getMapKey(start)] = v
+			}
+			v.SameDay = append(v.SameDay, e)
+		} else {
+			end = end.Add(-time.Duration(24) * time.Hour) // google does exclusive days
+			for current := start; !current.After(end); current = current.AddDate(0, 0, 1) {
+				v, ok := days[getMapKey(current)]
+				if !ok {
+					v = &DayEvents{}
+					days[getMapKey(current)] = v
+				}
+				v.MultiDay = append(v.MultiDay, &MultiDayEvent{
+					Event:     e,
+					StartDate: start,
+					EndDate:   end,
+					Position:  0,
+				})
+			}
+		}
 	}
 
-	y1, m1, d1 := t1.In(loc).Date()
-	y2, m2, d2 := t2.In(loc).Date()
-
-	return (y1 == y2 && m1 == m2 && d1 == d2), nil
+	return days
 }
 
 func generateCalendar() Calendar {
@@ -61,57 +123,36 @@ func generateCalendar() Calendar {
 
 	fmt.Println("Getting data")
 	events := getData(start, start.AddDate(0, 0, NUM_WEEKS*7))
+
+	dayEventsMap := getEventsForDays(events)
 	fmt.Printf("Got %d events\n", len(events.Items))
 
-	// for _, i := range events.Items {
-	// 	start := i.Start.DateTime
-	// 	if start == "" {
-	// 		start = i.Start.Date
-	// 	}
-	// 	fmt.Printf("%s - %s\n", start, i.Summary)
-	// }
-
 	var weeks []Week
-	day := start
+	currDay := start
 
 	for w := 0; w < NUM_WEEKS; w++ {
 		var days []Day
 		for d := 0; d < 7; d++ {
-			dayEvents := slices.Collect(
-				func(yield func(*calendar.Event) bool) {
-					for _, v := range events.Items {
-						d := v.Start.DateTime
-						if d == "" {
-							if v.Start.Date != "" {
-								d = v.Start.Date + "T00:00:00-08:00"
-							} else {
-								fmt.Printf("%+v ||| %+v", v, v.Start)
-								os.Exit(1)
-							}
-						}
-						sameDay, err := sameDayRFC3339(day, d, "Australia/Melbourne")
-						if err != nil {
-							fmt.Println("Error equating dates", err)
-						}
-						if sameDay {
-							if !yield(v) {
-								return // triggered in "break"
-							}
-						}
-					}
-				},
-			)
+
 			monthLabel := ""
-			if day.Day() == 1 {
-				monthLabel = day.Format("Jan")
+			if currDay.Day() == 1 {
+				monthLabel = currDay.Format("Jan")
 			}
+
+			dayEvents, ok := dayEventsMap[getMapKey(currDay)]
+
+			if !ok {
+				dayEvents = &DayEvents{}
+			}
+
 			days = append(days, Day{
-				Date:       day,
-				IsToday:    day == now,
-				Events:     dayEvents,
-				MonthLabel: monthLabel,
+				Date:           currDay,
+				IsToday:        currDay == now,
+				SameDayEvents:  dayEvents.SameDay,
+				MultiDayEvents: dayEvents.MultiDay,
+				MonthLabel:     monthLabel,
 			})
-			day = day.AddDate(0, 0, 1)
+			currDay = currDay.AddDate(0, 0, 1)
 		}
 		weeks = append(weeks, Week{
 			Days:    days,
@@ -141,6 +182,13 @@ func generateCalendar() Calendar {
 	return Calendar{Weeks: weeks}
 }
 
+func isSameDate(t1, t2 time.Time) bool {
+	fmt.Printf("%#v %#v\n", t1, t2)
+	y1, m1, d1 := t1.Date()
+	y2, m2, d2 := t2.Date()
+	return y1 == y2 && m1 == m2 && d1 == d2
+}
+
 // CreateCalendarHTML returns the rendered HTML for the 8-week calendar.
 func CreateCalendarHTML() error {
 	c := generateCalendar()
@@ -151,7 +199,9 @@ func CreateCalendarHTML() error {
 
 	tmpl := string(b)
 
-	t := template.Must(template.New("cal").Parse(tmpl))
+	t := template.Must(template.New("cal").Funcs(template.FuncMap{
+		"isSameDate": isSameDate,
+	}).Parse(tmpl))
 
 	f, err := os.Create("/code/out/cal.html")
 	fmt.Println("Created HTML")
