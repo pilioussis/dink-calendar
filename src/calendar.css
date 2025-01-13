@@ -1,7 +1,7 @@
 :root {
     --blue-grid-light: #4869be;
     --border-weekend: #9a0f0f;
-    --month-color: #0f513e;
+    --month-color: #053722;
     --today-background: #7a0f25;
     --today-text: #fff;
     --day-text: #0c191d;
@@ -15,6 +15,7 @@
 *::after {
   box-sizing: border-box;
   display: flex;
+  flex-direction: column;
 }
 
 @font-face {
@@ -48,6 +49,7 @@ body {
     padding-right: 1px;
     border-right: 2px solid var(--blue-grid-light);
     border-radius: 3px;
+    flex-direction: row;
 }
 
 .week:first-child {
@@ -69,7 +71,7 @@ body {
     border-color: transparent;
     border-right-color: var(--blue-grid-light);
     border-top-color: var(--blue-grid-light);
-    padding: 8px;
+    padding: 6px;
 
     display: flex;
     flex-direction: column;
@@ -125,14 +127,20 @@ body {
 .events {
     margin-top: 5px;
     margin-left: 0px;
+    flex-direction: column;
 }
 
 .event {
-    font-size: 18px;
     color: var(--pen-color);
     font-family: 'Courier New';
     font-weight: 600;
-    line-height: 15px;
+    font-size: 17.5px;
+    line-height: 15.5px;
+    flex-direction: row;
+}
+
+.event:not(:first-child) {
+    margin-top: 7px
 }
 
 .day:nth-child(5) {

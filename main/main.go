@@ -30,7 +30,7 @@ type Calendar struct {
 	Weeks []Week
 }
 
-const NUM_WEEKS = 14
+const NUM_WEEKS = 52
 
 func sameDayRFC3339(a time.Time, b, tz string) (bool, error) {
 	if b == "" {
