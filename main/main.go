@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"sort"
 	"strings"
 	"time"
 
@@ -31,6 +32,7 @@ type Day struct {
 	IsToday            bool
 	SameDayEvents      []*SameDayEvent
 	MultiDayEvents     []*MultiDayEvent
+	MultiDayMax        int
 	MonthLabel         string
 }
 
@@ -77,8 +79,9 @@ func getMapKey(t time.Time) string {
 }
 
 type DayEvents struct {
-	SameDay  []*SameDayEvent
-	MultiDay []*MultiDayEvent
+	SameDay     []*SameDayEvent
+	MultiDay    []*MultiDayEvent
+	MultiDayMax int
 }
 
 func getEventsForDays(events *calendar.Events) map[string]*DayEvents {
@@ -140,6 +143,11 @@ func getEventsForDays(events *calendar.Events) map[string]*DayEvents {
 					EndDate:   end,
 					Position:  lowest,
 				})
+				v.MultiDayMax = max(v.MultiDayMax, lowest)
+
+				sort.Slice(v.MultiDay, func(i, j int) bool {
+					return v.MultiDay[i].Position < v.MultiDay[j].Position
+				})
 			}
 		}
 	}
@@ -181,6 +189,7 @@ func generateCalendar() Calendar {
 				IsToday:        currDay == now,
 				SameDayEvents:  dayEvents.SameDay,
 				MultiDayEvents: dayEvents.MultiDay,
+				MultiDayMax:    dayEvents.MultiDayMax,
 				MonthLabel:     monthLabel,
 			})
 			currDay = currDay.AddDate(0, 0, 1)

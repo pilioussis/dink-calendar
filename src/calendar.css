@@ -72,7 +72,7 @@ body {
     border-color: transparent;
     border-right-color: var(--blue-grid-light);
     border-top-color: var(--blue-grid-light);
-    padding: 6px;
+    padding: 6px 6px 1px 6px;
 
     justify-content: space-between;
 }
@@ -154,21 +154,24 @@ body {
     color: var(--multi-day-color);
     white-space: nowrap;
     flex-direction: column-reverse;
+    height: calc((var(--max-position) + 1) * 15.5px)
+}
+
+.multi-day-event {
+    position: absolute;
+    margin-bottom: calc(var(--row-position) * 15.5px)
 }
 
 .multi-day-event-name {
-    position: absolute;
     z-index: 2;
     background-color: white;
 }
 
 .multi-day-event-cont {
-    position: absolute;
     z-index: 1;
 }
 
 .multi-day-event-end {
-    position: absolute;
     z-index: 1;
 }
 
