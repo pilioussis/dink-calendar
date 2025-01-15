@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"image/png"
@@ -60,7 +61,7 @@ func Dither(inPath, outPath string) {
 	src, err := getImageFromFilePath(inPath)
 
 	// Set the expected size that you want:
-	dd := image.NewRGBA(image.Rect(0, 0, 800, 600))
+	dd := image.NewRGBA(image.Rect(0, 0, 1600, 1200))
 
 	// Resize:
 	draw.NearestNeighbor.Scale(dd, dd.Rect, src, src.Bounds(), draw.Over, nil)
@@ -83,4 +84,5 @@ func Dither(inPath, outPath string) {
 		log.Printf("failed to encode: %v", err)
 	}
 
+	fmt.Println("Created dither")
 }

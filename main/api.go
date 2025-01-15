@@ -64,13 +64,12 @@ func saveToken(path string, token *oauth2.Token) {
 }
 
 func getData(start time.Time, end time.Time) *calendar.Events {
-	// Load your credentials JSON
+	fmt.Println("Getting events")
 	b, err := ioutil.ReadFile("credentials.json")
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
 
-	// Build config
 	config, err := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
@@ -93,5 +92,6 @@ func getData(start time.Time, end time.Time) *calendar.Events {
 		log.Fatalf("Unable to retrieve events: %v", err)
 	}
 
+	fmt.Println("Got events", len(events.Items))
 	return events
 }

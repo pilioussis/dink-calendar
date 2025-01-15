@@ -13,6 +13,15 @@ import (
 	calendar "google.golang.org/api/calendar/v3"
 )
 
+const IN_HTML_TEMPLATE = "src/cal.template.html"
+const OUT_HTML = "/code/out/cal.html"
+
+const FULL_PNG = "/code/out/cal.png"
+const DITHER_PNG = "/code/out/dither.png"
+
+const NUM_WEEKS = 10
+const TZ = "Australia/Melbourne"
+
 type SameDayEvent struct {
 	Event     *calendar.Event
 	StartDate time.Time
@@ -46,10 +55,6 @@ type Calendar struct {
 	Weeks    []Week
 	Timezone string
 }
-
-const NUM_WEEKS = 4
-
-const TZ = "Australia/Melbourne"
 
 func getTimeFromString(dateTimeString string, dateString string) time.Time {
 	loc, err := time.LoadLocation(TZ)
@@ -123,11 +128,6 @@ func getEventsForDays(events *calendar.Events) map[string]*DayEvents {
 
 			lowestFreeSpot[lowest] = end
 
-			for pos, t := range lowestFreeSpot {
-				fmt.Print("   ", pos, t, "\n")
-			}
-			// fmt.Print("lowest", lowest, "\n")
-
 			for current := start; !current.After(end); current = current.AddDate(0, 0, 1) {
 				v, ok := days[getMapKey(current)]
 				if !ok {
@@ -160,11 +160,9 @@ func generateCalendar() Calendar {
 	offset := (int(now.Weekday()) + 6) % 7
 	start := now.AddDate(0, 0, -offset)
 
-	fmt.Println("Getting data")
 	events := getData(start, start.AddDate(0, 0, NUM_WEEKS*7))
 
 	dayEventsMap := getEventsForDays(events)
-	fmt.Printf("Got %d events\n", len(events.Items))
 
 	var weeks []Week
 	currDay := start
@@ -228,12 +226,11 @@ func isSameDate(t1, t2 time.Time) bool {
 	return y1 == y2 && m1 == m2 && d1 == d2
 }
 
-// CreateCalendarHTML returns the rendered HTML for the 8-week calendar.
-func CreateCalendarHTML() error {
+func CreateCalendarHTML() {
 	c := generateCalendar()
-	b, err := os.ReadFile("src/cal.template.html")
+	b, err := os.ReadFile(IN_HTML_TEMPLATE)
 	if err != nil {
-		return err
+		log.Panicf("Error creating HTML: %v", err)
 	}
 
 	tmpl := string(b)
@@ -242,32 +239,30 @@ func CreateCalendarHTML() error {
 		"isSameDate": isSameDate,
 	}).Parse(tmpl))
 
-	f, err := os.Create("/code/out/cal.html")
-	fmt.Println("Created HTML")
+	f, err := os.Create(OUT_HTML)
 	if err != nil {
-		return err
+		log.Panicf("Error creating HTML: %v", err)
 	}
 
 	defer f.Close()
 
 	err = t.Execute(f, c)
-	return err
-}
+	fmt.Println("Created html")
 
-func main() {
-	err := CreateCalendarHTML()
 	if err != nil {
 		log.Panicf("Error creating HTML: %v", err)
 	}
+}
 
+func getScreenshot() {
 	cmd := exec.Command(
-		"wkhtmltoimage",
-		"--enable-local-file-access",
-		"--disable-smart-width",
-		"--zoom", "10",
-		"--width", "800",
+		"chromium",
+		"--headless",
+		"--no-sandbox",
+		fmt.Sprintf("--screenshot=%s", FULL_PNG),
+		"--window-size=1600,1200",
+		"--force-device-scale-factor=2",
 		"file:///code/out/cal.html",
-		"out/cal.png",
 	)
 	out, err := cmd.Output()
 
@@ -276,6 +271,10 @@ func main() {
 		return
 	}
 	fmt.Println("Created png")
+}
 
-	Dither("/code/out/cal.png", "/code/out/dither.png")
+func main() {
+	CreateCalendarHTML()
+	getScreenshot()
+	Dither(FULL_PNG, DITHER_PNG)
 }
