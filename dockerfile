@@ -12,6 +12,8 @@ RUN mv go /usr/local
 ENV PATH="$PATH:/usr/local/go/bin"
 
 WORKDIR /code
-RUN cd /code && go mod tidy
+COPY go.mod /code/go.mod
+COPY go.sum /code/go.sum
+RUN go mod download
 
 
