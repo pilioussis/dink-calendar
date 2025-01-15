@@ -4,7 +4,9 @@
   <link rel="stylesheet" href="../src/calendar.css">
 </head>
 <body>
-  <div class="weeks">
+  <div class="calendar-container">
+    <div class="calendar">
+    <div class="weeks">
     {{ range .Weeks }}
       <div class="week">
       {{ range $day := .Days }}
@@ -44,6 +46,8 @@
       {{ end }}
       </div>
     {{ end }}
+    </div>
   </div>
+</div>
 </body>
 </html>

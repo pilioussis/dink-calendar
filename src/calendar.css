@@ -18,15 +18,92 @@ div {
   flex-direction: column;
 }
 
+/* Pitch Font Family */
 @font-face {
-    font-family: Hand;
-    src: url("AlexandriaWhitehouse.otf") format("opentype");
+    font-family: 'Pitch';
+    src: url('font/Pitch-Regular.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Pitch';
+    src: url('font/Pitch-RegularItalic.otf') format('opentype');
+    font-weight: 400;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Pitch';
+    src: url('font/Pitch-Light.otf') format('opentype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Pitch';
+    src: url('font/Pitch-LightItalic.otf') format('opentype');
+    font-weight: 300;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Pitch';
+    src: url('font/Pitch-Medium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Pitch';
+    src: url('font/Pitch-MediumItalic.otf') format('opentype');
+    font-weight: 500;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Pitch';
+    src: url('font/Pitch-Semibold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Pitch';
+    src: url('font/Pitch-SemiboldItalic.otf') format('opentype');
+    font-weight: 700;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Pitch';
+    src: url('font/Pitch-Bold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Pitch';
+    src: url('font/Pitch-BoldItalic.otf') format('opentype');
+    font-weight: 700;
+    font-style: italic;
 }
 
 body {
     margin: 0px;
-    background-color: #f5efe7;
+    display: flex;
+    width: 800px;
+    height: 600px;
+}
+
+.calendar-container {
     width: 100%;
+    /* transform: scale(0.5); */
+    transform-origin: top left;
+}
+
+.calendar {
+    width: 1600px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -34,8 +111,8 @@ body {
     background-size: cover;
     background-repeat: repeat;
     background-color: #cccccc;
-    font-family: 'Courier New';
-    width: 1680px;
+    font-family: 'Pitch';
+    font-weight: 700;
 }
 
 .weeks {
@@ -87,7 +164,6 @@ body {
 .month-label {
     font-size: 17px;
     line-height: 17px;
-    font-weight: 600;
     color: var(--month-color);
     position: absolute;
     border: 2px solid var(--month-color);
@@ -130,7 +206,6 @@ body {
 
 .same-day-event {
     color: var(--pen-color);
-    font-weight: 600;
     font-size: 17.5px;
     line-height: 15.5px;
     flex-direction: row;
@@ -147,7 +222,6 @@ body {
 }
 
 .multi-day-events {
-    font-weight: 600;
     font-size: 17.5px;
     line-height: 15.5px;
     width: 100%;

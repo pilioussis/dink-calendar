@@ -47,7 +47,7 @@ type Calendar struct {
 	Timezone string
 }
 
-const NUM_WEEKS = 52
+const NUM_WEEKS = 4
 
 const TZ = "Australia/Melbourne"
 
@@ -263,6 +263,7 @@ func main() {
 	cmd := exec.Command(
 		"wkhtmltoimage",
 		"--enable-local-file-access",
+		"--disable-smart-width",
 		"--zoom", "10",
 		"--width", "800",
 		"file:///code/out/cal.html",
@@ -275,4 +276,6 @@ func main() {
 		return
 	}
 	fmt.Println("Created png")
+
+	Dither("/code/out/cal.png", "/code/out/dither.png")
 }
