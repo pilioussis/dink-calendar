@@ -95,7 +95,7 @@ func Dither(inPath, outPath string) {
 	src, err := getImageFromFilePath(inPath)
 
 	// Set the expected size that you want:
-	dd := image.NewRGBA(image.Rect(0, 0, 1600, 960))
+	dd := image.NewRGBA(image.Rect(0, 0, EXPORT_WIDTH, EXPORT_HEIGHT))
 
 	// Resize:
 	draw.NearestNeighbor.Scale(dd, dd.Rect, src, src.Bounds(), draw.Over, nil)

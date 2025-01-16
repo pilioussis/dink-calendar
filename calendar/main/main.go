@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"image"
+	"image/draw"
+	"image/png"
 	"log"
 	"os"
 	"os/exec"
@@ -21,8 +24,10 @@ const OUT_HTML = "out/cal.html"
 const FULL_PNG = "out/cal.png"
 const DITHER_PNG = "out/dither.png"
 
-const NUM_WEEKS = 10
+const NUM_WEEKS = 7
 const TZ = "Australia/Melbourne"
+
+const EXPORT_WIDTH, EXPORT_HEIGHT = 1600, 1200
 
 type SameDayEvent struct {
 	Event     *calendar.Event
@@ -260,15 +265,55 @@ func CreateCalendarHTML() {
 	}
 }
 
+func trimScreenshot() {
+	// Open the original PNG
+	inFile, err := os.Open(FULL_PNG)
+	if err != nil {
+		panic(err)
+	}
+	defer inFile.Close()
+
+	// Decode into an Image
+	src, err := png.Decode(inFile)
+	if err != nil {
+		panic(err)
+	}
+
+	// Desired width/height
+	// (Modify these to whatever you need)
+	targetWidth := EXPORT_WIDTH
+	targetHeight := EXPORT_HEIGHT
+
+	// Create a new image with the desired cropped size
+	rect := image.Rect(0, 0, targetWidth, targetHeight)
+	dst := image.NewRGBA(rect)
+
+	// Draw just the top-left portion onto dst
+	draw.Draw(dst, rect, src, image.Point{0, 0}, draw.Src)
+
+	// Write the new image to file
+	outFile, err := os.Create(FULL_PNG)
+	if err != nil {
+		panic(err)
+	}
+	defer outFile.Close()
+
+	if err = png.Encode(outFile, dst); err != nil {
+		panic(err)
+	}
+	fmt.Println("Trimmed png")
+}
+
 func getScreenshot() {
+	const paddingBottom = 200
 	cmd := exec.Command(
 		"chromium",
 		"--headless",
 		"--no-sandbox",
 		fmt.Sprintf("--screenshot=%s/%s", PROJ_PATH, FULL_PNG),
-		"--window-size=1600,960",
-		"--force-device-scale-factor=2",
-		"--virtual-time-budget=1000",
+		fmt.Sprintf("--window-size=%v,%v", EXPORT_WIDTH, EXPORT_HEIGHT+paddingBottom),
+		"--force-device-scale-factor=1",
+		"--virtual-time-budget=5000",
 		fmt.Sprintf("file://%s/%s", PROJ_PATH, OUT_HTML),
 	)
 	out, err := cmd.Output()
@@ -278,6 +323,8 @@ func getScreenshot() {
 		return
 	}
 	fmt.Println("Created png")
+
+	trimScreenshot()
 }
 
 func main() {

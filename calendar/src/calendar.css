@@ -18,82 +18,26 @@ div {
   flex-direction: column;
 }
 
-/* Pitch Font Family */
 @font-face {
-    font-family: 'Pitch';
-    src: url('./font/Pitch-Regular.otf') format('opentype');
-    font-weight: 400;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Pitch';
-    src: url('./font/Pitch-RegularItalic.otf') format('opentype');
-    font-weight: 400;
-    font-style: italic;
-}
-
-@font-face {
-    font-family: 'Pitch';
-    src: url('./font/Pitch-Light.otf') format('opentype');
-    font-weight: 300;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Pitch';
-    src: url('./font/Pitch-LightItalic.otf') format('opentype');
-    font-weight: 300;
-    font-style: italic;
-}
-
-@font-face {
-    font-family: 'Pitch';
-    src: url('./font/Pitch-Medium.otf') format('opentype');
-    font-weight: 500;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Pitch';
-    src: url('./font/Pitch-MediumItalic.otf') format('opentype');
-    font-weight: 500;
-    font-style: italic;
-}
-
-@font-face {
-    font-family: 'Pitch';
-    src: url('./font/Pitch-Semibold.otf') format('opentype');
+    font-family: 'Dink';
+    src: url('./font/CourierPrime-Bold.ttf');
     font-weight: 700;
     font-style: normal;
 }
 
 @font-face {
-    font-family: 'Pitch';
-    src: url('./font/Pitch-SemiboldItalic.otf') format('opentype');
+    font-family: 'Dink';
+    src: url('./font/CourierPrime-BoldItalic.ttf');
     font-weight: 700;
-    font-style: italic;
-}
-
-@font-face {
-    font-family: 'Pitch';
-    src: url('./font/Pitch-Bold.otf') format('opentype');
-    font-weight: 700;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Pitch';
-    src: url('./font/Pitch-BoldItalic.otf') format('opentype');
-    font-weight: 700;
-    font-style: italic;
 }
 
 body {
     margin: 0px;
     display: flex;
+    /* hide scrollbars */
     overflow: hidden;
     width: 1600px;
+    background-color: green;
 }
 
 .calendar-container {
@@ -103,7 +47,6 @@ body {
 }
 
 .calendar {
-    margin-top: 0.50px;
     width: 1600px;
     display: flex;
     flex-direction: column;
@@ -112,7 +55,7 @@ body {
     background-size: cover;
     background-repeat: repeat;
     background-color: #cccccc;
-    font-family: 'Pitch', sans-serif;
+    font-family: 'Dink', serif;
     font-weight: 700;
 }
 
@@ -172,6 +115,7 @@ body {
     border: 2px solid var(--month-color);
     border-radius: 2px;
     padding: 0px 5px;
+    font-style: italic;
 }
 
 .day-number-container {
