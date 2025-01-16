@@ -14,10 +14,10 @@ import (
 )
 
 const IN_HTML_TEMPLATE = "src/cal.template.html"
-const OUT_HTML = "/code/out/cal.html"
+const OUT_HTML = "./out/cal.html"
 
-const FULL_PNG = "/code/out/cal.png"
-const DITHER_PNG = "/code/out/dither.png"
+const FULL_PNG = "./out/cal.png"
+const DITHER_PNG = "./out/dither.png"
 
 const NUM_WEEKS = 10
 const TZ = "Australia/Melbourne"
@@ -260,7 +260,7 @@ func getScreenshot() {
 		"--headless",
 		"--no-sandbox",
 		fmt.Sprintf("--screenshot=%s", FULL_PNG),
-		"--window-size=1600,1200",
+		"--window-size=1600,960",
 		"--force-device-scale-factor=2",
 		"file:///code/out/cal.html",
 	)
