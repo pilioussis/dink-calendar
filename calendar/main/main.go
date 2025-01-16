@@ -13,18 +13,20 @@ import (
 	calendar "google.golang.org/api/calendar/v3"
 )
 
-const IN_HTML_TEMPLATE = "src/cal.template.html"
-const OUT_HTML = "./out/cal.html"
+const PROJ_PATH = "/code/calendar"
 
-const FULL_PNG = "./out/cal.png"
-const DITHER_PNG = "./out/dither.png"
+const IN_HTML_TEMPLATE = "src/cal.template.html"
+const OUT_HTML = "out/cal.html"
+
+const FULL_PNG = "out/cal.png"
+const DITHER_PNG = "out/dither.png"
 
 const NUM_WEEKS = 10
 const TZ = "Australia/Melbourne"
 
 type SameDayEvent struct {
 	Event     *calendar.Event
-	StartDate time.Time
+	StartTime *time.Time
 }
 
 type MultiDayEvent struct {
@@ -99,7 +101,7 @@ func getEventsForDays(events *calendar.Events) map[string]*DayEvents {
 		end := getTimeFromString(e.End.DateTime, e.End.Date)
 
 		y1, m1, d1 := start.Date()
-		y2, m2, d2 := end.Date()
+		y2, m2, d2 := end.Add(time.Microsecond * -1).Date() // google does exclusive days
 
 		sameDay := (y1 == y2 && m1 == m2 && d1 == d2)
 
@@ -109,7 +111,11 @@ func getEventsForDays(events *calendar.Events) map[string]*DayEvents {
 				v = &DayEvents{}
 				days[getMapKey(start)] = v
 			}
-			v.SameDay = append(v.SameDay, &SameDayEvent{Event: e, StartDate: start})
+			startTime := &start
+			if e.Start.DateTime == "" {
+				startTime = nil
+			}
+			v.SameDay = append(v.SameDay, &SameDayEvent{Event: e, StartTime: startTime})
 		} else {
 			end = end.Add(-time.Duration(24) * time.Hour) // google does exclusive days
 
@@ -259,10 +265,11 @@ func getScreenshot() {
 		"chromium",
 		"--headless",
 		"--no-sandbox",
-		fmt.Sprintf("--screenshot=%s", FULL_PNG),
+		fmt.Sprintf("--screenshot=%s/%s", PROJ_PATH, FULL_PNG),
 		"--window-size=1600,960",
 		"--force-device-scale-factor=2",
-		"file:///code/out/cal.html",
+		"--virtual-time-budget=1000",
+		fmt.Sprintf("file://%s/%s", PROJ_PATH, OUT_HTML),
 	)
 	out, err := cmd.Output()
 

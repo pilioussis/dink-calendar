@@ -1,15 +1,15 @@
 :root {
     --blue-grid-light: #4869be;
     --border-weekend: #9a0f0f;
-    --month-color: #053722;
+    --month-color: #004b2c;
     --today-background: #7a0f25;
     --today-text: #fff;
     --day-text: #0c191d;
-    --pen-color: #141c35;
-    --multi-day-color: #06255e;
+    --same-day-color: #141c35;
+    --multi-day-color: #001f57;
 
     --corder-radius: 2px;
-    --row-height: 12px;
+    --row-height: 15px;
 }
 
 div {
@@ -94,7 +94,6 @@ body {
     display: flex;
     overflow: hidden;
     width: 1600px;
-    /* height: 600px; */
 }
 
 .calendar-container {
@@ -104,6 +103,7 @@ body {
 }
 
 .calendar {
+    margin-top: 0.50px;
     width: 1600px;
     display: flex;
     flex-direction: column;
@@ -112,7 +112,7 @@ body {
     background-size: cover;
     background-repeat: repeat;
     background-color: #cccccc;
-    font-family: 'Pitch';
+    font-family: 'Pitch', sans-serif;
     font-weight: 700;
 }
 
@@ -153,6 +153,8 @@ body {
     padding: 6px 6px 1px 6px;
 
     justify-content: space-between;
+    font-size: 18px;
+    line-height: var(--row-height);
 }
 
 .month-label-container {
@@ -206,9 +208,7 @@ body {
 }
 
 .same-day-event {
-    color: var(--pen-color);
-    font-size: 17.5px;
-    line-height: 15.5px;
+    color: var(--same-day-color);
     flex-direction: row;
     display: inline;
 }
@@ -223,18 +223,16 @@ body {
 }
 
 .multi-day-events {
-    font-size: 17.5px;
-    line-height: 15.5px;
     width: 100%;
     color: var(--multi-day-color);
     white-space: nowrap;
     flex-direction: column-reverse;
-    height: calc((var(--max-position) + 1) * 15.5px)
+    height: calc((var(--max-position) + 1) * var(--row-height))
 }
 
 .multi-day-event {
     position: absolute;
-    margin-bottom: calc(var(--row-position) * 15.5px)
+    margin-bottom: calc(var(--row-position) * var(--row-height))
 }
 
 .multi-day-event-name {

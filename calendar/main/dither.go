@@ -57,6 +57,40 @@ func getImageFromFilePath(filePath string) (image.Image, error) {
 	return image, err
 }
 
+func toBlack(v uint32, multiplier float32) uint8 {
+	out := uint8(uint32(float32(v)*multiplier) >> 8)
+	return out
+}
+
+func toWhite(v uint32, multiplier float32) uint8 {
+	const UINT32_MAX = 65535
+	return uint8(uint32(float32(v)+float32(UINT32_MAX-v)*multiplier) >> 8)
+}
+
+func splitColors(palette []color.Color, steps int, fadeToBlack bool) []color.Color {
+	// Create variations of each color to give more depth to the display
+	// steps = 0 will do nothing
+	// steps = 2 will create two extra colors between white and input colors
+	for _, p := range palette {
+		for step := range steps {
+			r, g, b, a := p.RGBA()
+			multiplier := float32(step+1) / float32(steps+1)
+			f := toWhite
+			if fadeToBlack {
+				f = toBlack
+			}
+			palette = append(palette, color.RGBA{
+				R: f(r, multiplier),
+				G: f(g, multiplier),
+				B: f(b, multiplier),
+				A: uint8(a),
+			})
+		}
+	}
+	return palette
+
+}
+
 func Dither(inPath, outPath string) {
 	src, err := getImageFromFilePath(inPath)
 
@@ -71,7 +105,9 @@ func Dither(inPath, outPath string) {
 		log.Panicln("Image does not exist", img)
 	}
 
-	d := dither.NewDitherer(COLOR_6_EXTENDED)
+	palette := splitColors(COLOR_6, 50, false)
+
+	d := dither.NewDitherer(palette)
 	d.Matrix = dither.FloydSteinberg
 
 	img = d.Dither(img)
