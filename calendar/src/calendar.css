@@ -12,6 +12,22 @@
     --row-height: 15px;
 }
 
+.e-dean {
+    color: #0a1540;
+}
+
+.e-strugs {
+    color: #891aaf;
+}
+
+.e-birthday {
+    color: #1c705e;
+}
+
+.e-shared {
+    color: #000000;
+}
+
 div {
   box-sizing: border-box;
   display: flex;
@@ -61,7 +77,7 @@ body {
 
 .weeks {
     width: 100%;
-    padding: 10px;
+    padding: 2px;
     mix-blend-mode: color-burn;
 }
 
@@ -152,7 +168,6 @@ body {
 }
 
 .same-day-event {
-    color: var(--same-day-color);
     flex-direction: row;
     display: inline;
 }
@@ -168,7 +183,6 @@ body {
 
 .multi-day-events {
     width: 100%;
-    color: var(--multi-day-color);
     white-space: nowrap;
     flex-direction: column-reverse;
     height: calc((var(--max-position) + 1) * var(--row-height))

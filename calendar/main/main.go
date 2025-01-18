@@ -16,7 +16,7 @@ import (
 	calendar "google.golang.org/api/calendar/v3"
 )
 
-const PROJ_PATH = "/code/calendar"
+const PROJ_PATH = "/code"
 
 const IN_HTML_TEMPLATE = "src/cal.template.html"
 const OUT_HTML = "out/cal.html"
@@ -24,7 +24,7 @@ const OUT_HTML = "out/cal.html"
 const FULL_PNG = "out/cal.png"
 const DITHER_PNG = "out/dither.png"
 
-const NUM_WEEKS = 7
+const NUM_WEEKS = 8
 const TZ = "Australia/Melbourne"
 
 const EXPORT_WIDTH, EXPORT_HEIGHT = 1600, 1200
@@ -32,6 +32,7 @@ const EXPORT_WIDTH, EXPORT_HEIGHT = 1600, 1200
 type SameDayEvent struct {
 	Event     *calendar.Event
 	StartTime *time.Time
+	Class     string
 }
 
 type MultiDayEvent struct {
@@ -39,6 +40,7 @@ type MultiDayEvent struct {
 	StartDate time.Time
 	EndDate   time.Time
 	Position  int
+	Class     string
 }
 
 type Day struct {
@@ -96,12 +98,11 @@ type DayEvents struct {
 	MultiDayMax int
 }
 
-func getEventsForDays(events *calendar.Events) map[string]*DayEvents {
-	days := make(map[string]*DayEvents)
+func getEventsForDays(days map[string]*DayEvents, events []*calendar.Event, calname string) {
 
 	lowestFreeSpot := make(map[int]time.Time)
 
-	for _, e := range events.Items {
+	for _, e := range events {
 		start := getTimeFromString(e.Start.DateTime, e.Start.Date)
 		end := getTimeFromString(e.End.DateTime, e.End.Date)
 
@@ -120,7 +121,7 @@ func getEventsForDays(events *calendar.Events) map[string]*DayEvents {
 			if e.Start.DateTime == "" {
 				startTime = nil
 			}
-			v.SameDay = append(v.SameDay, &SameDayEvent{Event: e, StartTime: startTime})
+			v.SameDay = append(v.SameDay, &SameDayEvent{Event: e, StartTime: startTime, Class: calname})
 		} else {
 			end = end.Add(-time.Duration(24) * time.Hour) // google does exclusive days
 
@@ -153,6 +154,7 @@ func getEventsForDays(events *calendar.Events) map[string]*DayEvents {
 					StartDate: start,
 					EndDate:   end,
 					Position:  lowest,
+					Class:     calname,
 				})
 				v.MultiDayMax = max(v.MultiDayMax, lowest)
 
@@ -162,18 +164,33 @@ func getEventsForDays(events *calendar.Events) map[string]*DayEvents {
 			}
 		}
 	}
+}
 
-	return days
+func filterShared(events []*calendar.Event, email string) ([]*calendar.Event, []*calendar.Event) {
+	individual := []*calendar.Event{}
+	shared := []*calendar.Event{}
+	for _, e := range events {
+		skip := false
+		for _, a := range e.Attendees {
+			if a.Email == email {
+				skip = true
+				shared = append(shared, e)
+			}
+		}
+		if !skip {
+			individual = append(individual, e)
+		}
+	}
+	return individual, shared
 }
 
 func generateCalendar() Calendar {
 	now := time.Now().AddDate(0, 0, 0)
 	offset := (int(now.Weekday()) + 6) % 7
 	start := now.AddDate(0, 0, -offset)
+	end := start.AddDate(0, 0, NUM_WEEKS*7)
 
-	events := getData(start, start.AddDate(0, 0, NUM_WEEKS*7))
-
-	dayEventsMap := getEventsForDays(events)
+	dayEventsMap := getData(start, end)
 
 	var weeks []Week
 	currDay := start
@@ -306,14 +323,15 @@ func trimScreenshot() {
 
 func getScreenshot() {
 	const paddingBottom = 200
+
 	cmd := exec.Command(
 		"chromium",
 		"--headless",
 		"--no-sandbox",
-		fmt.Sprintf("--screenshot=%s/%s", PROJ_PATH, FULL_PNG),
-		fmt.Sprintf("--window-size=%v,%v", EXPORT_WIDTH, EXPORT_HEIGHT+paddingBottom),
+		fmt.Sprintf("--window-size=%v,%v", EXPORT_WIDTH, 1400),
 		"--force-device-scale-factor=1",
 		"--virtual-time-budget=5000",
+		fmt.Sprintf("--screenshot=%s/%s", PROJ_PATH, FULL_PNG),
 		fmt.Sprintf("file://%s/%s", PROJ_PATH, OUT_HTML),
 	)
 	out, err := cmd.Output()

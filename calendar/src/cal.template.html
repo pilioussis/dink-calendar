@@ -22,7 +22,7 @@
             </div>
             <div class="same-day-events">
               {{ range $day.SameDayEvents }}
-                <div class="same-day-event">
+                <div class="same-day-event {{.Class}}">
                   {{ if .StartTime }}
                     <span class="time">{{ .StartTime.Format "17:06" }}</span>
                   {{ end }}
@@ -34,7 +34,7 @@
           <div class="multi-day-events" style="--max-position:{{.MultiDayMax}}">
             {{ range $day.MultiDayEvents }}
               <br/>
-              <div class="multi-day-event" style="--row-position:{{.Position}}">
+              <div class="multi-day-event {{.Class}}" style="--row-position:{{.Position}}">
                 {{ if isSameDate $day.Date .StartDate }}
                   <div class="multi-day-event-name">{{ .Event.Summary }}</div>
                 {{ else if isSameDate $day.Date .EndDate }}
