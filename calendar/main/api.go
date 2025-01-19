@@ -19,6 +19,8 @@ const STRUGS_TOKEN = "strugs_token.json"
 const CALENDAR_BIRTHDAYS = "403994ecc2585854c8e932c00d1ca82c7cb9b423fdab94e0b5b6be2c56335b9d@group.calendar.google.com"
 const CALENDAR_PERSONAL = "primary"
 
+const CALENDAR_HOLIDAYS = "ee92ea54f1e2e5fab5aee1a88873031d57d2ea0b164a6968a4a943c9121bf292@group.calendar.google.com"
+
 const FILE_CACHE = "out/cached.json"
 
 func getDataForCal(start, end time.Time, tokenFile, calId string) *calendar.Events {
@@ -131,6 +133,7 @@ func getData(start, end time.Time) map[string]*DayEvents {
 	dean_pre := getDataForCal(start, end, DEAN_TOKEN, CALENDAR_PERSONAL)
 	strugs_pre := getDataForCal(start, end, STRUGS_TOKEN, CALENDAR_PERSONAL)
 	birthdays := getDataForCal(start, end, DEAN_TOKEN, CALENDAR_BIRTHDAYS)
+	holidays := getDataForCal(start, end, DEAN_TOKEN, CALENDAR_HOLIDAYS)
 
 	dean, shared := filterShared(dean_pre.Items, STRUGS_EMAIL)
 	strugs, _ := filterShared(strugs_pre.Items, DEAN_EMAIL)
@@ -139,19 +142,19 @@ func getData(start, end time.Time) map[string]*DayEvents {
 	getEventsForDays(dayEventsMap, dean, "e-dean")
 	getEventsForDays(dayEventsMap, strugs, "e-strugs")
 	getEventsForDays(dayEventsMap, birthdays.Items, "e-birthday")
+	getEventsForDays(dayEventsMap, holidays.Items, "holiday")
 
-	j, err := json.Marshal(dayEventsMap)
+	file, err := os.Create(FILE_CACHE)
 	if err != nil {
-		log.Panicf("Oh no")
+		log.Fatal(err)
 	}
-	data, err := json.MarshalIndent(j, "", "  ")
-	if err != nil {
-		log.Panicln("error marshaling data cache", err)
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(dayEventsMap); err != nil {
+		log.Fatal(err)
 	}
 
-	err = os.WriteFile(FILE_CACHE, data, 0600)
-	if err != nil {
-		log.Panicln("error writing data cache", err)
-	}
 	return dayEventsMap
 }

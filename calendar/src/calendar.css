@@ -52,7 +52,7 @@ body {
     display: flex;
     /* hide scrollbars */
     width: 1600px;
-    background-color: green;
+    background-color: rgb(77, 86, 83);
 }
 
 .calendar-container {
@@ -123,12 +123,12 @@ body {
 
 .month-label {
     font-size: 17px;
-    line-height: 17px;
+    line-height: 15px;
     color: var(--month-color);
     position: absolute;
     border: 2px solid var(--month-color);
     border-radius: 2px;
-    padding: 0px 5px;
+    padding: 2px 5px 0px;
     font-style: italic;
 }
 

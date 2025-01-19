@@ -115,7 +115,6 @@ func filterShared(events []*calendar.Event, email string) ([]*calendar.Event, []
 }
 
 func generateCalendar(start, now time.Time, dayEventsMap map[string]*DayEvents) Calendar {
-
 	var weeks []Week
 	currDay := start
 
