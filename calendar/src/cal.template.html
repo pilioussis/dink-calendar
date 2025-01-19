@@ -24,7 +24,7 @@
               {{ range $day.SameDayEvents }}
                 <div class="same-day-event {{.Class}}">
                   {{ if .StartTime }}
-                    <span class="time">{{ .StartTime.Format "17:06" }}</span>
+                    <span class="time">{{ .StartTime.Format "3:04" }}</span>
                   {{ end }}
                   {{ .Event.Summary }}
                 </div>

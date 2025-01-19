@@ -9,8 +9,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"sort"
-	"strings"
 	"time"
 
 	calendar "google.golang.org/api/calendar/v3"
@@ -98,74 +96,6 @@ type DayEvents struct {
 	MultiDayMax int
 }
 
-func getEventsForDays(days map[string]*DayEvents, events []*calendar.Event, calname string) {
-
-	lowestFreeSpot := make(map[int]time.Time)
-
-	for _, e := range events {
-		start := getTimeFromString(e.Start.DateTime, e.Start.Date)
-		end := getTimeFromString(e.End.DateTime, e.End.Date)
-
-		y1, m1, d1 := start.Date()
-		y2, m2, d2 := end.Add(time.Microsecond * -1).Date() // google does exclusive days
-
-		sameDay := (y1 == y2 && m1 == m2 && d1 == d2)
-
-		if sameDay {
-			v, ok := days[getMapKey(start)]
-			if !ok {
-				v = &DayEvents{}
-				days[getMapKey(start)] = v
-			}
-			startTime := &start
-			if e.Start.DateTime == "" {
-				startTime = nil
-			}
-			v.SameDay = append(v.SameDay, &SameDayEvent{Event: e, StartTime: startTime, Class: calname})
-		} else {
-			end = end.Add(-time.Duration(24) * time.Hour) // google does exclusive days
-
-			for pos, t := range lowestFreeSpot {
-				if start.After(t) {
-					delete(lowestFreeSpot, pos)
-				}
-			}
-			lowest := -1
-			for i := range 10 {
-				if _, ok := lowestFreeSpot[i]; !ok {
-					lowest = i
-					break
-				}
-			}
-
-			lowestFreeSpot[lowest] = end
-
-			for current := start; !current.After(end); current = current.AddDate(0, 0, 1) {
-				v, ok := days[getMapKey(current)]
-				if !ok {
-					v = &DayEvents{}
-					days[getMapKey(current)] = v
-				}
-				if len(e.Summary) < 25 {
-					e.Summary = e.Summary + strings.Repeat("-", 25-len(e.Summary))
-				}
-				v.MultiDay = append(v.MultiDay, &MultiDayEvent{
-					Event:     e,
-					StartDate: start,
-					EndDate:   end,
-					Position:  lowest,
-					Class:     calname,
-				})
-				v.MultiDayMax = max(v.MultiDayMax, lowest)
-
-				sort.Slice(v.MultiDay, func(i, j int) bool {
-					return v.MultiDay[i].Position < v.MultiDay[j].Position
-				})
-			}
-		}
-	}
-}
-
 func filterShared(events []*calendar.Event, email string) ([]*calendar.Event, []*calendar.Event) {
 	individual := []*calendar.Event{}
 	shared := []*calendar.Event{}
@@ -184,13 +114,7 @@ func filterShared(events []*calendar.Event, email string) ([]*calendar.Event, []
 	return individual, shared
 }
 
-func generateCalendar() Calendar {
-	now := time.Now().AddDate(0, 0, 0)
-	offset := (int(now.Weekday()) + 6) % 7
-	start := now.AddDate(0, 0, -offset)
-	end := start.AddDate(0, 0, NUM_WEEKS*7)
-
-	dayEventsMap := getData(start, end)
+func generateCalendar(start, now time.Time, dayEventsMap map[string]*DayEvents) Calendar {
 
 	var weeks []Week
 	currDay := start
@@ -254,8 +178,8 @@ func isSameDate(t1, t2 time.Time) bool {
 	return y1 == y2 && m1 == m2 && d1 == d2
 }
 
-func CreateCalendarHTML() {
-	c := generateCalendar()
+func CreateCalendarHTML(start, now time.Time, dayEventsMap map[string]*DayEvents) {
+	c := generateCalendar(start, now, dayEventsMap)
 	b, err := os.ReadFile(IN_HTML_TEMPLATE)
 	if err != nil {
 		log.Panicf("Error creating HTML: %v", err)
@@ -346,7 +270,18 @@ func getScreenshot() {
 }
 
 func main() {
-	// CreateCalendarHTML()
+	now := time.Now().AddDate(0, 0, 0)
+	offset := (int(now.Weekday()) + 6) % 7
+	start := now.AddDate(0, 0, -offset)
+
+	var dayEventsMap map[string]*DayEvents
+	if true {
+		dayEventsMap = getCachedData()
+	} else {
+		dayEventsMap = getData(start, start.AddDate(0, 0, NUM_WEEKS*7))
+	}
+
+	CreateCalendarHTML(start, now, dayEventsMap)
 	getScreenshot()
 	Dither(FULL_PNG, DITHER_PNG)
 }

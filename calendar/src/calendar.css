@@ -2,7 +2,7 @@
     --blue-grid-light: #5585ff;
     --border-weekend: #c42626;
     --month-color: #055a37;
-    --today-background: #812035;
+    --today-background: #902121;;
     --today-text: #fff;
     --day-text: #182a39;
     --same-day-color: #141c35;
@@ -21,7 +21,7 @@
 }
 
 .e-birthday {
-    color: #4e5fbc;
+    color: #4454a9;
 }
 
 .e-shared {
@@ -137,8 +137,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 100px;
-    width: 36px;
+    width: 39px;
+    padding-left: 2px;
     height: 24px;
 }
 
@@ -150,8 +150,9 @@ body {
 }
 
 .today .day-number-container {
-    box-shadow: #ff0000 .5px .3px;
-    border: 1px solid #540f0f;
+    border-radius: 100px;
+    box-shadow: #520a0a 1.5px -0.2px 0.4px;
+    border-right: 1.5px dotted #a25f34;
     background-color: var(--today-background);
 }
 

@@ -1,8 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"os"
+	"sort"
+	"strings"
 	"time"
 
 	calendar "google.golang.org/api/calendar/v3"
@@ -14,6 +18,8 @@ const DEAN_TOKEN = "dean_token.json"
 const STRUGS_TOKEN = "strugs_token.json"
 const CALENDAR_BIRTHDAYS = "403994ecc2585854c8e932c00d1ca82c7cb9b423fdab94e0b5b6be2c56335b9d@group.calendar.google.com"
 const CALENDAR_PERSONAL = "primary"
+
+const FILE_CACHE = "out/cached.json"
 
 func getDataForCal(start, end time.Time, tokenFile, calId string) *calendar.Events {
 	client := getttt(tokenFile)
@@ -37,6 +43,89 @@ func getDataForCal(start, end time.Time, tokenFile, calId string) *calendar.Even
 	return events
 }
 
+func getEventsForDays(days map[string]*DayEvents, events []*calendar.Event, calname string) {
+
+	lowestFreeSpot := make(map[int]time.Time)
+
+	for _, e := range events {
+		start := getTimeFromString(e.Start.DateTime, e.Start.Date)
+		end := getTimeFromString(e.End.DateTime, e.End.Date)
+
+		y1, m1, d1 := start.Date()
+		y2, m2, d2 := end.Add(time.Microsecond * -1).Date() // google does exclusive days
+
+		sameDay := (y1 == y2 && m1 == m2 && d1 == d2)
+
+		if sameDay {
+			v, ok := days[getMapKey(start)]
+			if !ok {
+				v = &DayEvents{}
+				days[getMapKey(start)] = v
+			}
+			startTime := &start
+			if e.Start.DateTime == "" {
+				startTime = nil
+			}
+			v.SameDay = append(v.SameDay, &SameDayEvent{Event: e, StartTime: startTime, Class: calname})
+		} else {
+			end = end.Add(-time.Duration(24) * time.Hour) // google does exclusive days
+
+			for pos, t := range lowestFreeSpot {
+				if start.After(t) {
+					delete(lowestFreeSpot, pos)
+				}
+			}
+			lowest := -1
+			for i := range 10 {
+				if _, ok := lowestFreeSpot[i]; !ok {
+					lowest = i
+					break
+				}
+			}
+
+			lowestFreeSpot[lowest] = end
+
+			for current := start; !current.After(end); current = current.AddDate(0, 0, 1) {
+				v, ok := days[getMapKey(current)]
+				if !ok {
+					v = &DayEvents{}
+					days[getMapKey(current)] = v
+				}
+				if len(e.Summary) < 25 {
+					e.Summary = e.Summary + strings.Repeat("-", 25-len(e.Summary))
+				}
+				v.MultiDay = append(v.MultiDay, &MultiDayEvent{
+					Event:     e,
+					StartDate: start,
+					EndDate:   end,
+					Position:  lowest,
+					Class:     calname,
+				})
+				v.MultiDayMax = max(v.MultiDayMax, lowest)
+
+				sort.Slice(v.MultiDay, func(i, j int) bool {
+					return v.MultiDay[i].Position < v.MultiDay[j].Position
+				})
+			}
+		}
+	}
+}
+
+func getCachedData() map[string]*DayEvents {
+	cache_str, err := os.ReadFile(FILE_CACHE)
+	dayEventsMap := make(map[string]*DayEvents)
+
+	if err != nil {
+		log.Panicln("Cache file not found", FILE_CACHE, err)
+	}
+
+	err = json.Unmarshal([]byte(cache_str), &dayEventsMap)
+	if err != nil {
+		log.Panicln("Error loading cache", err)
+	}
+	return dayEventsMap
+}
+
 func getData(start, end time.Time) map[string]*DayEvents {
 	dayEventsMap := make(map[string]*DayEvents)
 	dean_pre := getDataForCal(start, end, DEAN_TOKEN, CALENDAR_PERSONAL)
@@ -50,5 +139,19 @@ func getData(start, end time.Time) map[string]*DayEvents {
 	getEventsForDays(dayEventsMap, dean, "e-dean")
 	getEventsForDays(dayEventsMap, strugs, "e-strugs")
 	getEventsForDays(dayEventsMap, birthdays.Items, "e-birthday")
+
+	j, err := json.Marshal(dayEventsMap)
+	if err != nil {
+		log.Panicf("Oh no")
+	}
+	data, err := json.MarshalIndent(j, "", "  ")
+	if err != nil {
+		log.Panicln("error marshaling data cache", err)
+	}
+
+	err = os.WriteFile(FILE_CACHE, data, 0600)
+	if err != nil {
+		log.Panicln("error writing data cache", err)
+	}
 	return dayEventsMap
 }
