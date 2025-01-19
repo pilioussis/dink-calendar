@@ -69,7 +69,7 @@ func saveToken(path string, token *oauth2.Token) {
 	json.NewEncoder(f).Encode(token)
 }
 
-func getttt(tokenFile string) *http.Client {
+func getToken(tokenFile string) *http.Client {
 	credentials, err := os.ReadFile(CREDENTIALS_FILE)
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)

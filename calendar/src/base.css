@@ -1,0 +1,30 @@
+@font-face {
+    font-family: 'Dink';
+    src: url('./font/CourierPrime-Bold.ttf');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Dink';
+    src: url('./font/CourierPrime-BoldItalic.ttf');
+    font-weight: 700;
+}
+
+div {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+  
+body {
+    margin: 0px;
+    display: flex;
+    /* hide scrollbars */
+    width: 1600px;
+    background-color: rgb(77, 86, 83);
+}
+
+::-webkit-scrollbar {
+    display: none;
+}

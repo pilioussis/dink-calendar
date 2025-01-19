@@ -16,13 +16,12 @@ const DEAN_EMAIL = "dean.pilioussis@gmail.com"
 const STRUGS_EMAIL = "mcpherson.sarah.a@gmail.com"
 const CALENDAR_BIRTHDAYS = "403994ecc2585854c8e932c00d1ca82c7cb9b423fdab94e0b5b6be2c56335b9d@group.calendar.google.com"
 const CALENDAR_PERSONAL = "primary"
-
 const CALENDAR_HOLIDAYS = "ee92ea54f1e2e5fab5aee1a88873031d57d2ea0b164a6968a4a943c9121bf292@group.calendar.google.com"
 
 const FILE_CACHE = "out/cached.json"
 
 func getDataForCal(start, end time.Time, tokenFile, calId string) *calendar.Events {
-	client := getttt(tokenFile)
+	client := getToken(tokenFile)
 	srv, err := calendar.New(client)
 	if err != nil {
 		log.Fatalf("Unable to retrieve Calendar client: %v", err)
@@ -125,6 +124,24 @@ func getCachedData() map[string]*DayEvents {
 		log.Panicln("Error loading cache", err)
 	}
 	return dayEventsMap
+}
+
+func filterShared(events []*calendar.Event, email string) ([]*calendar.Event, []*calendar.Event) {
+	individual := []*calendar.Event{}
+	shared := []*calendar.Event{}
+	for _, e := range events {
+		skip := false
+		for _, a := range e.Attendees {
+			if a.Email == email {
+				skip = true
+				shared = append(shared, e)
+			}
+		}
+		if !skip {
+			individual = append(individual, e)
+		}
+	}
+	return individual, shared
 }
 
 func getData(start, end time.Time) map[string]*DayEvents {

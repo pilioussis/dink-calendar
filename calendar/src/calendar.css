@@ -18,10 +18,6 @@
     --row-height: 15px;
 }
 
-::-webkit-scrollbar {
-    display: none;
-}
-
 .e-dean {
     color: var(--events-dean);
 }
@@ -38,32 +34,7 @@
     color: var(--events-shared);
 }
 
-div {
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-}
 
-@font-face {
-    font-family: 'Dink';
-    src: url('./font/CourierPrime-Bold.ttf');
-    font-weight: 700;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Dink';
-    src: url('./font/CourierPrime-BoldItalic.ttf');
-    font-weight: 700;
-}
-
-body {
-    margin: 0px;
-    display: flex;
-    /* hide scrollbars */
-    width: 1600px;
-    background-color: rgb(77, 86, 83);
-}
 
 .calendar-container {
     width: 100%;

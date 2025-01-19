@@ -98,24 +98,6 @@ type DayEvents struct {
 	Holiday     string
 }
 
-func filterShared(events []*calendar.Event, email string) ([]*calendar.Event, []*calendar.Event) {
-	individual := []*calendar.Event{}
-	shared := []*calendar.Event{}
-	for _, e := range events {
-		skip := false
-		for _, a := range e.Attendees {
-			if a.Email == email {
-				skip = true
-				shared = append(shared, e)
-			}
-		}
-		if !skip {
-			individual = append(individual, e)
-		}
-	}
-	return individual, shared
-}
-
 func generateCalendar(start, now time.Time, dayEventsMap map[string]*DayEvents) Calendar {
 	var weeks []Week
 	currDay := start
@@ -256,7 +238,7 @@ func getScreenshot() {
 		"--no-sandbox",
 		fmt.Sprintf("--window-size=%v,%v", EXPORT_WIDTH, EXPORT_HEIGHT+paddingBottom),
 		"--force-device-scale-factor=1",
-		"--virtual-time-budget=5000",
+		// "--virtual-time-budget=5000",
 		fmt.Sprintf("--screenshot=%s/%s", PROJ_PATH, FULL_PNG),
 		fmt.Sprintf("file://%s/%s", PROJ_PATH, OUT_HTML),
 	)
