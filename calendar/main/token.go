@@ -15,6 +15,11 @@ import (
 	calendar "google.golang.org/api/calendar/v3"
 )
 
+const DEAN_TOKEN = "credentials/dean_token.json"
+const STRUGS_TOKEN = "credentials/strugs_token.json"
+
+const CREDENTIALS_FILE = "credentials/credentials.json"
+
 func getClient(config *oauth2.Config, tokenFile string) *http.Client {
 	// Token file - update path as needed
 	tok, err := tokenFromFile(tokenFile)
@@ -22,7 +27,7 @@ func getClient(config *oauth2.Config, tokenFile string) *http.Client {
 	if err != nil {
 		tok = getTokenFromWeb(config)
 		saveToken(tokenFile, tok)
-	} else if tok.Expiry.After(time.Now().Add(-24 * time.Hour)) {
+	} else if tok.Expiry.After(time.Now().Add(-12 * time.Hour)) {
 		tok = refreshToken(config, tok, tokenFile)
 	}
 	return config.Client(context.Background(), tok)
@@ -65,8 +70,7 @@ func saveToken(path string, token *oauth2.Token) {
 }
 
 func getttt(tokenFile string) *http.Client {
-	fmt.Println("Token")
-	credentials, err := os.ReadFile("credentials.json")
+	credentials, err := os.ReadFile(CREDENTIALS_FILE)
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
@@ -81,7 +85,7 @@ func getttt(tokenFile string) *http.Client {
 }
 
 func refreshToken(config *oauth2.Config, tok *oauth2.Token, tokenFile string) *oauth2.Token {
-	fmt.Println("Refreshing token", tokenFile)
+	fmt.Println("Refreshing", tokenFile)
 	ctx := context.Background()
 
 	// Create a token object with the refresh token
@@ -102,7 +106,7 @@ func refreshToken(config *oauth2.Config, tok *oauth2.Token, tokenFile string) *o
 		log.Panicln("Error saving token to file:", err)
 	}
 
-	fmt.Println("Token refreshed and saved to", tokenFile)
+	fmt.Println("Refreshed")
 	return newToken
 }
 

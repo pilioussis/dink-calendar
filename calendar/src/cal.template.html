@@ -11,39 +11,46 @@
       <div class="week">
       {{ range $day := .Days }}
         <div class="day {{ if .MonthBoundaryRight }}month-boundary-right{{ end }} {{ if .MonthBoundaryTop }}month-boundary-top{{ end }} {{ if .IsToday }}today{{ end }}">
-          <div class="day-top-content">
-            {{ if .MonthLabel }}
-              <div class="month-label-container">
-                <div class="month-label">{{ $day.MonthLabel }}</div>
+            <div class="day-border {{ if.Holiday}} holiday-border {{ end }}">
+            <div class="day-top-content">
+              {{ if .MonthLabel }}
+                <div class="month-label-container">
+                  <div class="month-label">{{ $day.MonthLabel }}</div>
+                </div>
+              {{ end }}
+              {{ if .Holiday }}
+                <div class="holiday-label-container">
+                  <div class="holiday-label">{{ $day.Holiday }}</div>
+                </div>
+              {{ end }}
+              <div class="day-number-container">
+                <div class="day-number">{{ $day.Date.Format "2" }}</div>
               </div>
-            {{ end }}
-            <div class="day-number-container">
-              <div class="day-number">{{ $day.Date.Format "2" }}</div>
+              <div class="same-day-events">
+                {{ range $day.SameDayEvents }}
+                  <div class="same-day-event {{.Class}}">
+                    {{ if .StartTime }}
+                      <span class="time">{{ .StartTime.Format "3:04" }}</span>
+                    {{ end }}
+                    {{ .Event.Summary }}
+                  </div>
+                {{ end }}
+              </div>
             </div>
-            <div class="same-day-events">
-              {{ range $day.SameDayEvents }}
-                <div class="same-day-event {{.Class}}">
-                  {{ if .StartTime }}
-                    <span class="time">{{ .StartTime.Format "3:04" }}</span>
+            <div class="multi-day-events" style="--max-position:{{.MultiDayMax}}">
+              {{ range $day.MultiDayEvents }}
+                <br/>
+                <div class="multi-day-event {{.Class}}" style="--row-position:{{.Position}}">
+                  {{ if isSameDate $day.Date .StartDate }}
+                    <div class="multi-day-event-name">{{ .Event.Summary }}</div>
+                  {{ else if isSameDate $day.Date .EndDate }}
+                    <div class="multi-day-event-cont">-----------------|</div>
+                  {{ else }}
+                    <div class="multi-day-event-end">---------------------</div>
                   {{ end }}
-                  {{ .Event.Summary }}
                 </div>
               {{ end }}
             </div>
-          </div>
-          <div class="multi-day-events" style="--max-position:{{.MultiDayMax}}">
-            {{ range $day.MultiDayEvents }}
-              <br/>
-              <div class="multi-day-event {{.Class}}" style="--row-position:{{.Position}}">
-                {{ if isSameDate $day.Date .StartDate }}
-                  <div class="multi-day-event-name">{{ .Event.Summary }}</div>
-                {{ else if isSameDate $day.Date .EndDate }}
-                  <div class="multi-day-event-cont">-----------------|</div>
-                {{ else }}
-                  <div class="multi-day-event-end">---------------------</div>
-                {{ end }}
-              </div>
-            {{ end }}
           </div>
         </div>
       {{ end }}

@@ -14,8 +14,6 @@ import (
 
 const DEAN_EMAIL = "dean.pilioussis@gmail.com"
 const STRUGS_EMAIL = "mcpherson.sarah.a@gmail.com"
-const DEAN_TOKEN = "dean_token.json"
-const STRUGS_TOKEN = "strugs_token.json"
 const CALENDAR_BIRTHDAYS = "403994ecc2585854c8e932c00d1ca82c7cb9b423fdab94e0b5b6be2c56335b9d@group.calendar.google.com"
 const CALENDAR_PERSONAL = "primary"
 
@@ -45,7 +43,7 @@ func getDataForCal(start, end time.Time, tokenFile, calId string) *calendar.Even
 	return events
 }
 
-func getEventsForDays(days map[string]*DayEvents, events []*calendar.Event, calname string) {
+func getEventsForDays(dayEventsMap map[string]*DayEvents, events []*calendar.Event, calname string) {
 
 	lowestFreeSpot := make(map[int]time.Time)
 
@@ -59,10 +57,10 @@ func getEventsForDays(days map[string]*DayEvents, events []*calendar.Event, caln
 		sameDay := (y1 == y2 && m1 == m2 && d1 == d2)
 
 		if sameDay {
-			v, ok := days[getMapKey(start)]
+			v, ok := dayEventsMap[getMapKey(start)]
 			if !ok {
 				v = &DayEvents{}
-				days[getMapKey(start)] = v
+				dayEventsMap[getMapKey(start)] = v
 			}
 			startTime := &start
 			if e.Start.DateTime == "" {
@@ -88,10 +86,10 @@ func getEventsForDays(days map[string]*DayEvents, events []*calendar.Event, caln
 			lowestFreeSpot[lowest] = end
 
 			for current := start; !current.After(end); current = current.AddDate(0, 0, 1) {
-				v, ok := days[getMapKey(current)]
+				v, ok := dayEventsMap[getMapKey(current)]
 				if !ok {
 					v = &DayEvents{}
-					days[getMapKey(current)] = v
+					dayEventsMap[getMapKey(current)] = v
 				}
 				if len(e.Summary) < 25 {
 					e.Summary = e.Summary + strings.Repeat("-", 25-len(e.Summary))
@@ -114,6 +112,7 @@ func getEventsForDays(days map[string]*DayEvents, events []*calendar.Event, caln
 }
 
 func getCachedData() map[string]*DayEvents {
+	fmt.Println("Using cached events")
 	cache_str, err := os.ReadFile(FILE_CACHE)
 	dayEventsMap := make(map[string]*DayEvents)
 
@@ -142,7 +141,17 @@ func getData(start, end time.Time) map[string]*DayEvents {
 	getEventsForDays(dayEventsMap, dean, "e-dean")
 	getEventsForDays(dayEventsMap, strugs, "e-strugs")
 	getEventsForDays(dayEventsMap, birthdays.Items, "e-birthday")
-	getEventsForDays(dayEventsMap, holidays.Items, "holiday")
+
+	for _, e := range holidays.Items {
+		kTime := getTimeFromString(e.Start.DateTime, e.Start.Date)
+		v, ok := dayEventsMap[getMapKey(kTime)]
+		if !ok {
+			v = &DayEvents{}
+			dayEventsMap[getMapKey(kTime)] = v
+
+		}
+		v.Holiday = e.Summary
+	}
 
 	file, err := os.Create(FILE_CACHE)
 	if err != nil {

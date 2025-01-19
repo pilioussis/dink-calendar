@@ -105,7 +105,7 @@ func Dither(inPath, outPath string) {
 		log.Panicln("Image does not exist", img)
 	}
 
-	palette := splitColors(COLOR_6, 1, false)
+	palette := splitColors(COLOR_6, 10, false)
 
 	d := dither.NewDitherer(palette)
 	d.Matrix = dither.FloydSteinberg

@@ -22,7 +22,7 @@ const OUT_HTML = "out/cal.html"
 const FULL_PNG = "out/cal.png"
 const DITHER_PNG = "out/dither.png"
 
-const NUM_WEEKS = 8
+const NUM_WEEKS = 30
 const TZ = "Australia/Melbourne"
 
 const EXPORT_WIDTH, EXPORT_HEIGHT = 1600, 1200
@@ -50,6 +50,7 @@ type Day struct {
 	MultiDayEvents     []*MultiDayEvent
 	MultiDayMax        int
 	MonthLabel         string
+	Holiday            string // Is "" if not holiday
 }
 
 type Week struct {
@@ -94,6 +95,7 @@ type DayEvents struct {
 	SameDay     []*SameDayEvent
 	MultiDay    []*MultiDayEvent
 	MultiDayMax int
+	Holiday     string
 }
 
 func filterShared(events []*calendar.Event, email string) ([]*calendar.Event, []*calendar.Event) {
@@ -140,6 +142,7 @@ func generateCalendar(start, now time.Time, dayEventsMap map[string]*DayEvents) 
 				MultiDayEvents: dayEvents.MultiDay,
 				MultiDayMax:    dayEvents.MultiDayMax,
 				MonthLabel:     monthLabel,
+				Holiday:        dayEvents.Holiday,
 			})
 			currDay = currDay.AddDate(0, 0, 1)
 		}
@@ -274,7 +277,7 @@ func main() {
 	start := now.AddDate(0, 0, -offset)
 
 	var dayEventsMap map[string]*DayEvents
-	if true {
+	if skip := true; skip {
 		dayEventsMap = getCachedData()
 	} else {
 		dayEventsMap = getData(start, start.AddDate(0, 0, NUM_WEEKS*7))
