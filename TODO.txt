@@ -10,8 +10,3 @@
 
 [ ] Final coding
     [ ] Figure out how to mix 
-
-
-
-    138.11 / 1648 = 0.084
-    170.20 / 800  = 0.213

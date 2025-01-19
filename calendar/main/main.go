@@ -328,7 +328,7 @@ func getScreenshot() {
 		"chromium",
 		"--headless",
 		"--no-sandbox",
-		fmt.Sprintf("--window-size=%v,%v", EXPORT_WIDTH, 1400),
+		fmt.Sprintf("--window-size=%v,%v", EXPORT_WIDTH, EXPORT_HEIGHT+paddingBottom),
 		"--force-device-scale-factor=1",
 		"--virtual-time-budget=5000",
 		fmt.Sprintf("--screenshot=%s/%s", PROJ_PATH, FULL_PNG),
@@ -346,7 +346,7 @@ func getScreenshot() {
 }
 
 func main() {
-	CreateCalendarHTML()
+	// CreateCalendarHTML()
 	getScreenshot()
 	Dither(FULL_PNG, DITHER_PNG)
 }
