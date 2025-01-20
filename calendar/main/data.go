@@ -12,33 +12,58 @@ import (
 	calendar "google.golang.org/api/calendar/v3"
 )
 
+type CalendarSource struct {
+	Name  string
+	Token string
+	ID    string
+}
+
 const DEAN_EMAIL = "dean.pilioussis@gmail.com"
 const STRUGS_EMAIL = "mcpherson.sarah.a@gmail.com"
-const CALENDAR_BIRTHDAYS = "403994ecc2585854c8e932c00d1ca82c7cb9b423fdab94e0b5b6be2c56335b9d@group.calendar.google.com"
-const CALENDAR_PERSONAL = "primary"
-const CALENDAR_HOLIDAYS = "ee92ea54f1e2e5fab5aee1a88873031d57d2ea0b164a6968a4a943c9121bf292@group.calendar.google.com"
+
+var CALENDAR_DEAN = CalendarSource{
+	Name:  "dean-personal",
+	Token: DEAN_TOKEN,
+	ID:    "primary",
+}
+
+var CALENDAR_STRUGS = CalendarSource{
+	Name:  "strugs-personal",
+	Token: STRUGS_TOKEN,
+	ID:    "primary",
+}
+
+var CALENDAR_BIRTHDAYS = CalendarSource{
+	Name:  "birthdays",
+	Token: DEAN_TOKEN,
+	ID:    "403994ecc2585854c8e932c00d1ca82c7cb9b423fdab94e0b5b6be2c56335b9d@group.calendar.google.com",
+}
+
+var CALENDAR_HOLIDAYS = CalendarSource{
+	Name:  "holidays",
+	Token: DEAN_TOKEN,
+	ID:    "ee92ea54f1e2e5fab5aee1a88873031d57d2ea0b164a6968a4a943c9121bf292@group.calendar.google.com",
+}
 
 const CACHE_FOLDER = "out/cache"
 
 var TZ = mustLoadLocation("Australia/Melbourne")
 
-func getCacheFile(userId string, calId string) string {
-	// TODO: FIX THIS
-	userId = strings.Replace(userId, "credentials/", "", 1)
-	return fmt.Sprintf("%s/%s--%s.json", CACHE_FOLDER, userId, calId)
+func getCacheFile(cal CalendarSource) string {
+	return fmt.Sprintf("%s/%s.json", CACHE_FOLDER, cal.Name)
 }
 
-func getDataForCal(start, end time.Time, tokenFile, calId string, useCache bool) *calendar.Events {
+func getDataForCal(start, end time.Time, cal CalendarSource, useCache bool) *calendar.Events {
 	if useCache {
-		return getCachedData(tokenFile, calId)
+		return getCachedData(cal)
 	}
-	client := getToken(tokenFile)
+	client := getToken(cal.Token)
 	srv, err := calendar.New(client)
 	if err != nil {
 		log.Fatalf("Unable to retrieve Calendar client: %v", err)
 	}
 	fmt.Println("Getting events")
-	events, err := srv.Events.List(calId).
+	events, err := srv.Events.List(cal.ID).
 		ShowDeleted(false).
 		SingleEvents(true).
 		TimeMin(start.UTC().Format(time.RFC3339)).
@@ -50,7 +75,7 @@ func getDataForCal(start, end time.Time, tokenFile, calId string, useCache bool)
 	}
 
 	os.MkdirAll(CACHE_FOLDER, os.ModePerm)
-	file, err := os.Create(getCacheFile(tokenFile, calId))
+	file, err := os.Create(getCacheFile(cal))
 	if err != nil {
 		log.Fatal("Saving cache error:", err)
 	}
@@ -162,13 +187,13 @@ func filterShared(events []*calendar.Event, email string) ([]*calendar.Event, []
 	return individual, shared
 }
 
-func getCachedData(tokenFile, calId string) *calendar.Events {
-	fmt.Println("Using cached events", tokenFile)
-	cache_str, err := os.ReadFile(getCacheFile(tokenFile, calId))
+func getCachedData(cal CalendarSource) *calendar.Events {
+	fmt.Println("Using cached events", cal.Name)
+	cache_str, err := os.ReadFile(getCacheFile(cal))
 	var events *calendar.Events
 
 	if err != nil {
-		log.Panicln("Cache file not found", calId, err)
+		log.Panicln("Cache file not found", cal.ID, err)
 	}
 
 	err = json.Unmarshal([]byte(cache_str), &events)
@@ -181,10 +206,10 @@ func getCachedData(tokenFile, calId string) *calendar.Events {
 
 func getData(start, end time.Time, useCache bool) map[string]*DayEvents {
 	dayEventsMap := make(map[string]*DayEvents)
-	dean_pre := getDataForCal(start, end, DEAN_TOKEN, CALENDAR_PERSONAL, useCache)
-	strugs_pre := getDataForCal(start, end, STRUGS_TOKEN, CALENDAR_PERSONAL, useCache)
-	birthdays := getDataForCal(start, end, DEAN_TOKEN, CALENDAR_BIRTHDAYS, useCache)
-	holidays := getDataForCal(start, end, DEAN_TOKEN, CALENDAR_HOLIDAYS, useCache)
+	dean_pre := getDataForCal(start, end, CALENDAR_DEAN, useCache)
+	strugs_pre := getDataForCal(start, end, CALENDAR_STRUGS, useCache)
+	birthdays := getDataForCal(start, end, CALENDAR_BIRTHDAYS, useCache)
+	holidays := getDataForCal(start, end, CALENDAR_HOLIDAYS, useCache)
 
 	dean, shared := filterShared(dean_pre.Items, STRUGS_EMAIL)
 	strugs, _ := filterShared(strugs_pre.Items, DEAN_EMAIL)

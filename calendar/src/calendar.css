@@ -80,12 +80,12 @@
 .day-border {
     justify-content: space-between;
     flex-grow: 1;
-    border: 3px solid transparent;
-    padding: 4px 4px 4px 4px;
+    border: 4px solid transparent;
+    padding: 3px 3px 3px 3px;
 }
 
 .holiday-border {
-   border: 3px dotted var(--holiday-color);
+   border: 4px dotted var(--holiday-color);
 }
 
 .month-label-container {

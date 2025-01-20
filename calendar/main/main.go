@@ -139,11 +139,9 @@ func CreateCalendarHTML(start, now time.Time, dayEventsMap map[string]*DayEvents
 		log.Panicf("Error creating HTML: %v", err)
 	}
 
-	tmpl := string(b)
-
 	t := template.Must(template.New("cal").Funcs(template.FuncMap{
 		"isSameDate": isSameDate,
-	}).Parse(tmpl))
+	}).Parse(string(b)))
 
 	f, err := os.Create(OUT_HTML)
 	if err != nil {
@@ -227,10 +225,11 @@ func main() {
 	now := time.Now().AddDate(0, 0, 0)
 	offset := (int(now.Weekday()) + 6) % 7
 	start := now.AddDate(0, 0, -offset)
+	end := start.AddDate(0, 0, NUM_WEEKS*7)
 
 	useCache := true
 
-	dayEventsMap := getData(start, start.AddDate(0, 0, NUM_WEEKS*7), useCache)
+	dayEventsMap := getData(start, end, useCache)
 	CreateCalendarHTML(start, now, dayEventsMap)
 	getScreenshot()
 	Dither(FULL_PNG, DITHER_PNG)

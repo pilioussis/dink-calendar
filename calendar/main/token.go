@@ -15,10 +15,12 @@ import (
 	calendar "google.golang.org/api/calendar/v3"
 )
 
-const DEAN_TOKEN = "credentials/dean_token.json"
-const STRUGS_TOKEN = "credentials/strugs_token.json"
+const DEAN_TOKEN = "dean_token.json"
+const STRUGS_TOKEN = "strugs_token.json"
 
-const CREDENTIALS_FILE = "credentials/credentials.json"
+const CREDENTIALS_FOLDER = "credentials"
+
+const CREDENTIALS_FILE = "credentials.json"
 
 func getClient(config *oauth2.Config, tokenFile string) *http.Client {
 	// Token file - update path as needed
@@ -34,7 +36,7 @@ func getClient(config *oauth2.Config, tokenFile string) *http.Client {
 }
 
 func tokenFromFile(file string) (*oauth2.Token, error) {
-	f, err := os.Open(file)
+	f, err := os.Open(fmt.Sprintf("%s/%s", CREDENTIALS_FOLDER, file))
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +72,7 @@ func saveToken(path string, token *oauth2.Token) {
 }
 
 func getToken(tokenFile string) *http.Client {
-	credentials, err := os.ReadFile(CREDENTIALS_FILE)
+	credentials, err := os.ReadFile(fmt.Sprintf("%s/%s", CREDENTIALS_FOLDER, CREDENTIALS_FILE))
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
