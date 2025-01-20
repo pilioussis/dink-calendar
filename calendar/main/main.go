@@ -23,7 +23,6 @@ const FULL_PNG = "out/cal.png"
 const DITHER_PNG = "out/dither.png"
 
 const NUM_WEEKS = 30
-const TZ = "Australia/Melbourne"
 
 const EXPORT_WIDTH, EXPORT_HEIGHT = 1600, 1200
 
@@ -37,6 +36,7 @@ type MultiDayEvent struct {
 	Event     *calendar.Event
 	StartDate time.Time
 	EndDate   time.Time
+	StartTime *time.Time
 	Position  int
 	Class     string
 }
@@ -60,31 +60,7 @@ type Week struct {
 }
 
 type Calendar struct {
-	Weeks    []Week
-	Timezone string
-}
-
-func getTimeFromString(dateTimeString string, dateString string) time.Time {
-	loc, err := time.LoadLocation(TZ)
-	if err != nil {
-		log.Panicf("Error loading location: %s", TZ)
-	}
-	if dateTimeString != "" {
-		t, err := time.ParseInLocation(time.RFC3339, dateTimeString, loc)
-		if err != nil {
-			log.Panicf("Error loading dateTimeString: %+v", dateTimeString)
-		}
-		return t
-	}
-
-	if dateString != "" {
-		t, err := time.ParseInLocation(time.DateOnly, dateString, loc)
-		if err != nil {
-			log.Panicf("Error loading dateString: %+v", dateString)
-		}
-		return t
-	}
-	panic("Both date strings empty")
+	Weeks []Week
 }
 
 func getMapKey(t time.Time) string {
@@ -153,13 +129,7 @@ func generateCalendar(start, now time.Time, dayEventsMap map[string]*DayEvents) 
 		}
 	}
 
-	return Calendar{Weeks: weeks, Timezone: TZ}
-}
-
-func isSameDate(t1, t2 time.Time) bool {
-	y1, m1, d1 := t1.Date()
-	y2, m2, d2 := t2.Date()
-	return y1 == y2 && m1 == m2 && d1 == d2
+	return Calendar{Weeks: weeks}
 }
 
 func CreateCalendarHTML(start, now time.Time, dayEventsMap map[string]*DayEvents) {
@@ -259,12 +229,11 @@ func main() {
 	start := now.AddDate(0, 0, -offset)
 
 	var dayEventsMap map[string]*DayEvents
-	if skip := true; skip {
+	if skip := false; skip {
 		dayEventsMap = getCachedData()
 	} else {
 		dayEventsMap = getData(start, start.AddDate(0, 0, NUM_WEEKS*7))
 	}
-
 	CreateCalendarHTML(start, now, dayEventsMap)
 	getScreenshot()
 	Dither(FULL_PNG, DITHER_PNG)

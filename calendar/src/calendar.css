@@ -3,7 +3,7 @@
     --border-weekend: #ed4d7a;
     --month-color: #055a37;
     --holiday-color: #294794;
-    --today-background: #902121;;
+    --today-background: #a13232;;
     --today-text: #fff;
     --day-text: #182a39;
     --same-day-color: #141c35;
@@ -17,24 +17,6 @@
     --corder-radius: 2px;
     --row-height: 15px;
 }
-
-.e-dean {
-    color: var(--events-dean);
-}
-
-.e-strugs {
-    color: var(--events-strugs);
-}
-
-.e-birthday {
-    color: var(--events-birthday);
-}
-
-.e-shared {
-    color: var(--events-shared);
-}
-
-
 
 .calendar-container {
     width: 100%;
@@ -81,14 +63,14 @@
 
 .day {
     width: calc(100% / 7);
-    min-height: 150px;
+    min-height: 180px;
     border-left-width: 0px;
     border-bottom-width: 1px;
     border-style: solid;
     border-color: transparent;
     border-right-color: var(--blue-grid-light);
     border-top-color: var(--blue-grid-light);
-    padding: 1px 1px 0px 1px;
+    padding: 4px 4px 4px 4px;
 
     justify-content: space-between;
     font-size: 18px;
@@ -99,7 +81,7 @@
     justify-content: space-between;
     flex-grow: 1;
     border: 3px solid transparent;
-    padding: 2px 2px 0px 2px;
+    padding: 4px 4px 4px 4px;
 }
 
 .holiday-border {
@@ -169,11 +151,26 @@
 
 .today .day-number {
     color: var(--today-text);
+}
 
+.e-dean {
+    color: var(--events-dean);
+}
+
+.e-strugs {
+    color: var(--events-strugs);
+}
+
+.e-birthday {
+    color: var(--events-birthday);
+}
+
+.e-shared {
+    color: var(--events-shared);
 }
 
 .same-day-events {
-    margin-top: 5px;
+    margin-top: 9px;
     margin-left: 0px;
     flex-direction: column;
 }
@@ -187,28 +184,29 @@
 
 .time {
     text-decoration: underline;
-    display: inline;
 }
 
 .same-day-event:not(:first-child) {
-    margin-top: 7px
+    margin-top: 8px
 }
 
 .multi-day-events {
     width: 100%;
     white-space: nowrap;
     flex-direction: column-reverse;
-    height: calc((var(--max-position) + 1) * var(--row-height))
+    height: calc((var(--max-position) + 1) * var(--row-height));
+    margin-bottom: -5px;
 }
 
 .multi-day-event {
     position: absolute;
-    margin-bottom: calc(var(--row-position) * var(--row-height))
+    margin-bottom: calc(var(--row-position) * var(--row-height));
 }
 
 .multi-day-event-name {
     z-index: 2;
     background-color: #ffffff;
+    display: inline;
 }
 
 .multi-day-event-cont {

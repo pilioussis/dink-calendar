@@ -20,6 +20,8 @@ const CALENDAR_HOLIDAYS = "ee92ea54f1e2e5fab5aee1a88873031d57d2ea0b164a6968a4a94
 
 const FILE_CACHE = "out/cached.json"
 
+var TZ = mustLoadLocation("Australia/Melbourne")
+
 func getDataForCal(start, end time.Time, tokenFile, calId string) *calendar.Events {
 	client := getToken(tokenFile)
 	srv, err := calendar.New(client)
@@ -50,8 +52,13 @@ func getEventsForDays(dayEventsMap map[string]*DayEvents, events []*calendar.Eve
 		start := getTimeFromString(e.Start.DateTime, e.Start.Date)
 		end := getTimeFromString(e.End.DateTime, e.End.Date)
 
+		if e.End.Date != "" {
+			// google does exclusive days
+			end = end.Add(-time.Duration(24) * time.Hour)
+		}
+
 		y1, m1, d1 := start.Date()
-		y2, m2, d2 := end.Add(time.Microsecond * -1).Date() // google does exclusive days
+		y2, m2, d2 := end.Date()
 
 		sameDay := (y1 == y2 && m1 == m2 && d1 == d2)
 
@@ -67,8 +74,6 @@ func getEventsForDays(dayEventsMap map[string]*DayEvents, events []*calendar.Eve
 			}
 			v.SameDay = append(v.SameDay, &SameDayEvent{Event: e, StartTime: startTime, Class: calname})
 		} else {
-			end = end.Add(-time.Duration(24) * time.Hour) // google does exclusive days
-
 			for pos, t := range lowestFreeSpot {
 				if start.After(t) {
 					delete(lowestFreeSpot, pos)
@@ -93,10 +98,17 @@ func getEventsForDays(dayEventsMap map[string]*DayEvents, events []*calendar.Eve
 				if len(e.Summary) < 25 {
 					e.Summary = e.Summary + strings.Repeat("-", 25-len(e.Summary))
 				}
+
+				var startTime *time.Time
+				if e.Start.DateTime != "" {
+					// Only set time if event has a time
+					startTime = &start
+				}
 				v.MultiDay = append(v.MultiDay, &MultiDayEvent{
 					Event:     e,
 					StartDate: start,
 					EndDate:   end,
+					StartTime: startTime,
 					Position:  lowest,
 					Class:     calname,
 				})
@@ -108,22 +120,6 @@ func getEventsForDays(dayEventsMap map[string]*DayEvents, events []*calendar.Eve
 			}
 		}
 	}
-}
-
-func getCachedData() map[string]*DayEvents {
-	fmt.Println("Using cached events")
-	cache_str, err := os.ReadFile(FILE_CACHE)
-	dayEventsMap := make(map[string]*DayEvents)
-
-	if err != nil {
-		log.Panicln("Cache file not found", FILE_CACHE, err)
-	}
-
-	err = json.Unmarshal([]byte(cache_str), &dayEventsMap)
-	if err != nil {
-		log.Panicln("Error loading cache", err)
-	}
-	return dayEventsMap
 }
 
 func filterShared(events []*calendar.Event, email string) ([]*calendar.Event, []*calendar.Event) {
@@ -142,6 +138,33 @@ func filterShared(events []*calendar.Event, email string) ([]*calendar.Event, []
 		}
 	}
 	return individual, shared
+}
+
+func getCachedData() map[string]*DayEvents {
+	fmt.Println("Using cached events")
+	cache_str, err := os.ReadFile(FILE_CACHE)
+	dayEventsMap := make(map[string]*DayEvents)
+
+	if err != nil {
+		log.Panicln("Cache file not found", FILE_CACHE, err)
+	}
+
+	err = json.Unmarshal([]byte(cache_str), &dayEventsMap)
+	if err != nil {
+		log.Panicln("Error loading cache", err)
+	}
+
+	for _, v := range dayEventsMap {
+		for _, e := range v.SameDay {
+			if e.Event.Start.DateTime != "" {
+				a := e.StartTime.In(TZ)
+				e.StartTime = &a
+			}
+
+		}
+
+	}
+	return dayEventsMap
 }
 
 func getData(start, end time.Time) map[string]*DayEvents {
