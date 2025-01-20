@@ -18,11 +18,20 @@ const CALENDAR_BIRTHDAYS = "403994ecc2585854c8e932c00d1ca82c7cb9b423fdab94e0b5b6
 const CALENDAR_PERSONAL = "primary"
 const CALENDAR_HOLIDAYS = "ee92ea54f1e2e5fab5aee1a88873031d57d2ea0b164a6968a4a943c9121bf292@group.calendar.google.com"
 
-const FILE_CACHE = "out/cached.json"
+const CACHE_FOLDER = "out/cache"
 
 var TZ = mustLoadLocation("Australia/Melbourne")
 
-func getDataForCal(start, end time.Time, tokenFile, calId string) *calendar.Events {
+func getCacheFile(userId string, calId string) string {
+	// TODO: FIX THIS
+	userId = strings.Replace(userId, "credentials/", "", 1)
+	return fmt.Sprintf("%s/%s--%s.json", CACHE_FOLDER, userId, calId)
+}
+
+func getDataForCal(start, end time.Time, tokenFile, calId string, useCache bool) *calendar.Events {
+	if useCache {
+		return getCachedData(tokenFile, calId)
+	}
 	client := getToken(tokenFile)
 	srv, err := calendar.New(client)
 	if err != nil {
@@ -38,6 +47,19 @@ func getDataForCal(start, end time.Time, tokenFile, calId string) *calendar.Even
 		Do()
 	if err != nil {
 		log.Fatalf("Unable to retrieve events: %v", err)
+	}
+
+	os.MkdirAll(CACHE_FOLDER, os.ModePerm)
+	file, err := os.Create(getCacheFile(tokenFile, calId))
+	if err != nil {
+		log.Fatal("Saving cache error:", err)
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(events); err != nil {
+		log.Fatal(err)
 	}
 
 	fmt.Println("Got events", len(events.Items))
@@ -140,39 +162,29 @@ func filterShared(events []*calendar.Event, email string) ([]*calendar.Event, []
 	return individual, shared
 }
 
-func getCachedData() map[string]*DayEvents {
-	fmt.Println("Using cached events")
-	cache_str, err := os.ReadFile(FILE_CACHE)
-	dayEventsMap := make(map[string]*DayEvents)
+func getCachedData(tokenFile, calId string) *calendar.Events {
+	fmt.Println("Using cached events", tokenFile)
+	cache_str, err := os.ReadFile(getCacheFile(tokenFile, calId))
+	var events *calendar.Events
 
 	if err != nil {
-		log.Panicln("Cache file not found", FILE_CACHE, err)
+		log.Panicln("Cache file not found", calId, err)
 	}
 
-	err = json.Unmarshal([]byte(cache_str), &dayEventsMap)
+	err = json.Unmarshal([]byte(cache_str), &events)
 	if err != nil {
 		log.Panicln("Error loading cache", err)
 	}
 
-	for _, v := range dayEventsMap {
-		for _, e := range v.SameDay {
-			if e.Event.Start.DateTime != "" {
-				a := e.StartTime.In(TZ)
-				e.StartTime = &a
-			}
-
-		}
-
-	}
-	return dayEventsMap
+	return events
 }
 
-func getData(start, end time.Time) map[string]*DayEvents {
+func getData(start, end time.Time, useCache bool) map[string]*DayEvents {
 	dayEventsMap := make(map[string]*DayEvents)
-	dean_pre := getDataForCal(start, end, DEAN_TOKEN, CALENDAR_PERSONAL)
-	strugs_pre := getDataForCal(start, end, STRUGS_TOKEN, CALENDAR_PERSONAL)
-	birthdays := getDataForCal(start, end, DEAN_TOKEN, CALENDAR_BIRTHDAYS)
-	holidays := getDataForCal(start, end, DEAN_TOKEN, CALENDAR_HOLIDAYS)
+	dean_pre := getDataForCal(start, end, DEAN_TOKEN, CALENDAR_PERSONAL, useCache)
+	strugs_pre := getDataForCal(start, end, STRUGS_TOKEN, CALENDAR_PERSONAL, useCache)
+	birthdays := getDataForCal(start, end, DEAN_TOKEN, CALENDAR_BIRTHDAYS, useCache)
+	holidays := getDataForCal(start, end, DEAN_TOKEN, CALENDAR_HOLIDAYS, useCache)
 
 	dean, shared := filterShared(dean_pre.Items, STRUGS_EMAIL)
 	strugs, _ := filterShared(strugs_pre.Items, DEAN_EMAIL)
@@ -191,18 +203,6 @@ func getData(start, end time.Time) map[string]*DayEvents {
 
 		}
 		v.Holiday = e.Summary
-	}
-
-	file, err := os.Create(FILE_CACHE)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(dayEventsMap); err != nil {
-		log.Fatal(err)
 	}
 
 	return dayEventsMap

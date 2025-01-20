@@ -228,12 +228,9 @@ func main() {
 	offset := (int(now.Weekday()) + 6) % 7
 	start := now.AddDate(0, 0, -offset)
 
-	var dayEventsMap map[string]*DayEvents
-	if skip := false; skip {
-		dayEventsMap = getCachedData()
-	} else {
-		dayEventsMap = getData(start, start.AddDate(0, 0, NUM_WEEKS*7))
-	}
+	useCache := true
+
+	dayEventsMap := getData(start, start.AddDate(0, 0, NUM_WEEKS*7), useCache)
 	CreateCalendarHTML(start, now, dayEventsMap)
 	getScreenshot()
 	Dither(FULL_PNG, DITHER_PNG)
