@@ -50,9 +50,9 @@
                       {{ .Event.Summary }}
                     </div>
                   {{ else if isSameDate $day.Date .EndDate }}
-                    <div class="multi-day-event-cont">-----------------|</div>
+                    <div class="multi-day-event-cont">-----------------<span class="terminator">¦</span></div>
                   {{ else }}
-                    <div class="multi-day-event-end">---------------------</div>
+                    <div class="multi-day-event-cont">---------------------</div>
                   {{ end }}
                 </div>
               {{ end }}

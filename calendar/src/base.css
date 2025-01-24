@@ -23,6 +23,9 @@ body {
     /* hide scrollbars */
     width: 1600px;
     background-color: rgb(77, 86, 83);
+
+    font-family: 'Dink', 'Courier New', Courier, monospace;
+    font-weight: 700;
 }
 
 ::-webkit-scrollbar {

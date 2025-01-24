@@ -228,8 +228,9 @@ func main() {
 	end := start.AddDate(0, 0, NUM_WEEKS*7)
 
 	useCache := true
+	createStubEvents := false
 
-	dayEventsMap := getData(start, end, useCache)
+	dayEventsMap := getData(start, end, createStubEvents, useCache)
 	CreateCalendarHTML(start, now, dayEventsMap)
 	getScreenshot()
 	Dither(FULL_PNG, DITHER_PNG)

@@ -32,8 +32,6 @@
     background-image: url("paper.jpg");
     background-size: 100%;
     background-repeat: repeat;
-    font-family: 'Dink', serif;
-    font-weight: 700;
 }
 
 .weeks {
@@ -116,7 +114,7 @@
     font-size: 13.5px;
     line-height: 10px;
     overflow: hidden;
-    max-height: 20px;
+    max-height: 22px;
     text-align: right;
     color: var(--holiday-color);
     position: absolute;
@@ -184,6 +182,7 @@
 
 .time {
     text-decoration: underline;
+    margin-right: -5px;
 }
 
 .same-day-event:not(:first-child) {
@@ -211,10 +210,11 @@
 
 .multi-day-event-cont {
     z-index: 1;
+    flex-direction: row;
 }
 
-.multi-day-event-end {
-    z-index: 1;
+.terminator {
+    margin-left: -3px;
 }
 
 .day:nth-child(5) {

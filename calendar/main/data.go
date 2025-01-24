@@ -62,7 +62,8 @@ func getDataForCal(start, end time.Time, cal CalendarSource, useCache bool) *cal
 	if err != nil {
 		log.Fatalf("Unable to retrieve Calendar client: %v", err)
 	}
-	fmt.Println("Getting events")
+
+	fmt.Printf("Get events: %s", cal.Name)
 	events, err := srv.Events.List(cal.ID).
 		ShowDeleted(false).
 		SingleEvents(true).
@@ -71,13 +72,13 @@ func getDataForCal(start, end time.Time, cal CalendarSource, useCache bool) *cal
 		OrderBy("startTime").
 		Do()
 	if err != nil {
-		log.Fatalf("Unable to retrieve events: %v", err)
+		log.Fatalf("\nUnable to retrieve events: %v", err)
 	}
 
 	os.MkdirAll(CACHE_FOLDER, os.ModePerm)
 	file, err := os.Create(getCacheFile(cal))
 	if err != nil {
-		log.Fatal("Saving cache error:", err)
+		log.Fatal("\nSaving cache error:", err)
 	}
 	defer file.Close()
 
@@ -87,7 +88,7 @@ func getDataForCal(start, end time.Time, cal CalendarSource, useCache bool) *cal
 		log.Fatal(err)
 	}
 
-	fmt.Println("Got events", len(events.Items))
+	fmt.Println("\rGot events:", len(events.Items), cal.Name)
 	return events
 }
 
@@ -106,7 +107,6 @@ func getEventsForDays(dayEventsMap map[string]*DayEvents, events []*calendar.Eve
 
 		y1, m1, d1 := start.Date()
 		y2, m2, d2 := end.Date()
-
 		sameDay := (y1 == y2 && m1 == m2 && d1 == d2)
 
 		if sameDay {
@@ -136,7 +136,8 @@ func getEventsForDays(dayEventsMap map[string]*DayEvents, events []*calendar.Eve
 
 			lowestFreeSpot[lowest] = end
 
-			for current := start; !current.After(end); current = current.AddDate(0, 0, 1) {
+			init := time.Date(start.Year(), start.Month(), start.Day(), 0, 0, 0, 0, TZ)
+			for current := init; !current.After(end); current = current.AddDate(0, 0, 1) {
 				v, ok := dayEventsMap[getMapKey(current)]
 				if !ok {
 					v = &DayEvents{}
@@ -188,7 +189,7 @@ func filterShared(events []*calendar.Event, email string) ([]*calendar.Event, []
 }
 
 func getCachedData(cal CalendarSource) *calendar.Events {
-	fmt.Println("Using cached events", cal.Name)
+	fmt.Println("Got cached events:", cal.Name)
 	cache_str, err := os.ReadFile(getCacheFile(cal))
 	var events *calendar.Events
 
@@ -204,7 +205,7 @@ func getCachedData(cal CalendarSource) *calendar.Events {
 	return events
 }
 
-func getData(start, end time.Time, useCache bool) map[string]*DayEvents {
+func getData(start, end time.Time, createStubEvents, useCache bool) map[string]*DayEvents {
 	dayEventsMap := make(map[string]*DayEvents)
 	dean_pre := getDataForCal(start, end, CALENDAR_DEAN, useCache)
 	strugs_pre := getDataForCal(start, end, CALENDAR_STRUGS, useCache)
@@ -214,9 +215,39 @@ func getData(start, end time.Time, useCache bool) map[string]*DayEvents {
 	dean, shared := filterShared(dean_pre.Items, STRUGS_EMAIL)
 	strugs, _ := filterShared(strugs_pre.Items, DEAN_EMAIL)
 
-	getEventsForDays(dayEventsMap, shared, "e-shared")
+	if createStubEvents {
+		times := [][2]string{
+			{"2025-02-12T13:15:00+11:00", "2025-02-16"},
+		}
+		stub_str, err := os.ReadFile("src/stub.json")
+		if err != nil {
+			log.Panicln("Event stub file not found:", err)
+		}
+
+		for _, t := range times {
+			var fakeEvent *calendar.Event
+			err := json.Unmarshal([]byte(stub_str), &fakeEvent)
+			if err != nil {
+				log.Panicln("Unable to create fake events", err)
+			}
+			if strings.Contains(t[0], ":") {
+				fakeEvent.Start.DateTime = t[0]
+			} else {
+				fakeEvent.Start.Date = t[0]
+			}
+			if strings.Contains(t[1], ":") {
+				fakeEvent.End.DateTime = t[1]
+			} else {
+				fakeEvent.End.Date = t[1]
+			}
+			dean = append(dean, fakeEvent)
+		}
+
+	}
+
 	getEventsForDays(dayEventsMap, dean, "e-dean")
 	getEventsForDays(dayEventsMap, strugs, "e-strugs")
+	getEventsForDays(dayEventsMap, shared, "e-shared")
 	getEventsForDays(dayEventsMap, birthdays.Items, "e-birthday")
 
 	for _, e := range holidays.Items {

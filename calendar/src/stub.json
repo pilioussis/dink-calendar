@@ -1,0 +1,28 @@
+{
+    "created": "2025-01-20T10:02:50.000Z",
+    "creator": {
+      "email": "dean.pilioussis@gmail.com",
+      "self": true
+    },
+    "end": {
+      "date": "2025-02-16"
+    },
+    "etag": "\"3474734763912000\"",
+    "eventType": "default",
+    "htmlLink": "https://www.google.com/calendar/event?eid=NzhsbjRhdG41anQ3a2Z0NG5jNjd0cXFubXIgZGVhbi5waWxpb3Vzc2lzQG0",
+    "iCalUID": "78ln4atn5jt7kft4nc67tqqnmr@google.com",
+    "id": "78ln4atn5jt7kft4nc67tqqnmr",
+    "kind": "calendar#event",
+    "organizer": {
+      "email": "dean.pilioussis@gmail.com",
+      "self": true
+    },
+    "reminders": {},
+    "start": {
+      "date": "2025-02-13"
+    },
+    "status": "confirmed",
+    "summary": "FakeEvent",
+    "transparency": "transparent",
+    "updated": "2025-01-20T10:03:01.956Z"
+}
