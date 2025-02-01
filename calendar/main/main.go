@@ -19,12 +19,12 @@ const PROJ_PATH = "/code"
 const IN_HTML_TEMPLATE = "src/cal.template.html"
 const OUT_HTML = "out/cal.html"
 
-const FULL_PNG = "out/cal.png"
-const DITHER_PNG = "out/dither.png"
+const FULL_COLOR_PATH = "out/cal.png"
+const DITHERED_PATH = "out/dither.bmp"
 
 const NUM_WEEKS = 30
 
-const EXPORT_WIDTH, EXPORT_HEIGHT = 1600, 1200
+const EXPORT_WIDTH, EXPORT_HEIGHT = 800, 480
 
 type SameDayEvent struct {
 	Event     *calendar.Event
@@ -160,7 +160,7 @@ func CreateCalendarHTML(start, now time.Time, dayEventsMap map[string]*DayEvents
 
 func trimScreenshot() {
 	// Open the original PNG
-	inFile, err := os.Open(FULL_PNG)
+	inFile, err := os.Open(FULL_COLOR_PATH)
 	if err != nil {
 		panic(err)
 	}
@@ -185,7 +185,7 @@ func trimScreenshot() {
 	draw.Draw(dst, rect, src, image.Point{0, 0}, draw.Src)
 
 	// Write the new image to file
-	outFile, err := os.Create(FULL_PNG)
+	outFile, err := os.Create(FULL_COLOR_PATH)
 	if err != nil {
 		panic(err)
 	}
@@ -206,8 +206,8 @@ func getScreenshot() {
 		"--no-sandbox",
 		fmt.Sprintf("--window-size=%v,%v", EXPORT_WIDTH, EXPORT_HEIGHT+paddingBottom),
 		"--force-device-scale-factor=1",
-		// "--virtual-time-budget=5000",
-		fmt.Sprintf("--screenshot=%s/%s", PROJ_PATH, FULL_PNG),
+		"--virtual-time-budget=50",
+		fmt.Sprintf("--screenshot=%s/%s", PROJ_PATH, FULL_COLOR_PATH),
 		fmt.Sprintf("file://%s/%s", PROJ_PATH, OUT_HTML),
 	)
 	out, err := cmd.Output()
@@ -222,16 +222,21 @@ func getScreenshot() {
 }
 
 func main() {
-	now := time.Now().AddDate(0, 0, 0)
-	offset := (int(now.Weekday()) + 6) % 7
-	start := now.AddDate(0, 0, -offset)
-	end := start.AddDate(0, 0, NUM_WEEKS*7)
+	fmt.Println("Started")
+	if false {
 
-	useCache := true
-	createStubEvents := false
+		now := time.Now().AddDate(0, 0, 0)
+		offset := (int(now.Weekday()) + 6) % 7
+		start := now.AddDate(0, 0, -offset)
+		end := start.AddDate(0, 0, NUM_WEEKS*7)
 
-	dayEventsMap := getData(start, end, createStubEvents, useCache)
-	CreateCalendarHTML(start, now, dayEventsMap)
-	getScreenshot()
-	Dither(FULL_PNG, DITHER_PNG)
+		useCache := true
+		createStubEvents := true
+
+		dayEventsMap := getData(start, end, createStubEvents, useCache)
+		CreateCalendarHTML(start, now, dayEventsMap)
+		getScreenshot()
+	}
+
+	Dither(FULL_COLOR_PATH, DITHERED_PATH)
 }

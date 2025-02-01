@@ -1,5 +1,6 @@
 services:
   dink:
+    command: /bin/sh -c 'echo "Waiting for exec commands..."; tail -f /dev/null' # wait for exec commands
     build: ./
     volumes:
         - ./:/code

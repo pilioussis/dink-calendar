@@ -1,12 +1,13 @@
-[ ] Raspberry Pi Setup
-    [ ] Create image
-    [ ] Flash image
-    [ ] Connect via SSH
+[*] Raspberry Pi Setup
+    [*] Create image
+    [*] Flash image
+    [*] Connect via SSH
 
-[ ] Demo fiddle
-    [ ] Run waveshare demo
-    [ ] Run waveshare demo with calendar image
-    [ ] Split out c demo to print a single image
+[*] Demo fiddle
+    [*] Run waveshare demo
+    [*] Run waveshare demo with calendar image
+    [*] Split out demo to print a single image
 
 [ ] Final coding
     [ ] Figure out how to mix 
+

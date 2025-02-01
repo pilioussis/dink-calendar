@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"image/png"
 	"log"
 	"os"
 	"strconv"
 
+	"golang.org/x/image/bmp"
 	"golang.org/x/image/draw"
 
 	dither "github.com/makeworld-the-better-one/dither/v2"
@@ -92,12 +92,21 @@ func splitColors(palette []color.Color, steps int, fadeToBlack bool) []color.Col
 }
 
 func Dither(inPath, outPath string) {
+	skip := true
+
+	outfile, err := os.Create(outPath)
+	if err != nil {
+		panic(err)
+	}
+
 	src, err := getImageFromFilePath(inPath)
 
 	// Set the expected size that you want:
 	dd := image.NewRGBA(image.Rect(0, 0, EXPORT_WIDTH, EXPORT_HEIGHT))
 
-	// Resize:
+	// copy image in case we want to skip and pass through (not necessary if dithering)
+	draw.Draw(dd, dd.Bounds(), src, src.Bounds().Min, draw.Src)
+
 	draw.NearestNeighbor.Scale(dd, dd.Rect, src, src.Bounds(), draw.Over, nil)
 
 	img := image.Image(dd)
@@ -110,13 +119,11 @@ func Dither(inPath, outPath string) {
 	d := dither.NewDitherer(palette)
 	d.Matrix = dither.FloydSteinberg
 
-	img = d.Dither(img)
-
-	outfile, err := os.Create(outPath)
-	if err != nil {
-		panic(err)
+	if !skip {
+		img = d.Dither(img)
 	}
-	if err = png.Encode(outfile, img); err != nil {
+
+	if err = bmp.Encode(outfile, img); err != nil {
 		log.Printf("failed to encode: %v", err)
 	}
 

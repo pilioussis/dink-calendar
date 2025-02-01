@@ -16,8 +16,6 @@ def act_to_list(act_file):
 
     return colors, total_colors_count
 
-colors, _ = act_to_list('act-files/N-color.act')
+colors, _ = act_to_list('act-files/6-color.act')
 for c in colors:
     print(f' background-color: {c};')
-print(a)
-print(b)

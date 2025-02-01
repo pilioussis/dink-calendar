@@ -1,0 +1,1 @@
+echo "./out/cal.png" | entr bash -c "sh ./do.sh"
