@@ -92,7 +92,7 @@ func splitColors(palette []color.Color, steps int, fadeToBlack bool) []color.Col
 }
 
 func Dither(inPath, outPath string) {
-	skip := true
+	skip := false
 
 	outfile, err := os.Create(outPath)
 	if err != nil {

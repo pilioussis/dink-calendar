@@ -1,18 +1,18 @@
 :root {
-    --blue-grid-light: #5585ff;
-    --border-weekend: #ed4d7a;
-    --month-color: #0020ff;
-    --holiday-color: #294794;
-    --today-background: #a13232;;
-    --today-text: #fff;
-    --day-text: #182a39;
-    --same-day-color: #141c35;
-    --multi-day-color: #001f57;
+    --blue-grid-light: #c9d2ff;
+    --border-weekend: #880000;
+    --month-color: #8cff00;
+    --holiday-color: #8dff00;
+    --today-background: #ff0000;;
+    --today-text: #ffffff;
+    --day-text: #201037;
+    --same-day-color: #000000;
+    --multi-day-color: #ff00ff;
 
-    --events-dean: #193497;
-    --events-strugs: #3631ab;
-    --events-shared: #453053;
-    --events-birthday: #654d4d;
+    --events-dean: #0000ff;
+    --events-strugs: #00ba00;
+    --events-shared: #ff00d9;
+    --events-birthday: #f6a82b;
 
     --corder-radius: 2px;
     --row-height: 15px;
@@ -29,15 +29,16 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-image: url("paper.jpg");
-    background-size: 100%;
+    /* background-image: url("back.png"); */
+    background-color: rgb(255, 255, 255);
+    background-size: 50%;
     background-repeat: repeat;
 }
 
 .weeks {
     width: 100%;
     padding: 2px;
-    mix-blend-mode: color-burn;
+    /* mix-blend-mode: color-burn; */
 }
 
 .week {
@@ -60,7 +61,7 @@
 }
 
 .day {
-    width: calc(100% / 7);
+    width: calc(100% / 8.3);
     min-height: 180px;
     border-left-width: 0px;
     border-bottom-width: 1px;
@@ -110,8 +111,9 @@
 }
 .holiday-label {
     position: relative;
-    right: 0px;
-    font-size: 13.5px;
+    right: -9px;
+    background-color: white;
+    font-size: 13px;
     line-height: 10px;
     overflow: hidden;
     max-height: 22px;
@@ -119,7 +121,7 @@
     color: var(--holiday-color);
     position: absolute;
     border-radius: 2px;
-    padding: 2px 5px 0px;
+    padding: 2px 0px 0px;
     font-style: italic;
 }
 
@@ -204,7 +206,7 @@
 
 .multi-day-event-name {
     z-index: 2;
-    background-color: #ffffff;
+    /* background-color: #ffffff; */
     display: inline;
 }
 
@@ -234,11 +236,11 @@
 }
 
 .day.month-boundary-right {
-    border-right: 2.8px solid var(--month-color);
+    border-right: 4px solid var(--month-color);
 }
 
 .day.month-boundary-top {
-    border-top: 2.8px solid var(--month-color);
+    border-top: 4px solid var(--month-color);
 }
 
 

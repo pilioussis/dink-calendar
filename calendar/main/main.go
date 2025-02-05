@@ -223,9 +223,10 @@ func getScreenshot() {
 
 func main() {
 	fmt.Println("Started")
-	if false {
 
-		now := time.Now().AddDate(0, 0, 0)
+	if false {
+		fmt.Println("Taking calendar screenshot")
+		now := time.Now().AddDate(0, 0, -7)
 		offset := (int(now.Weekday()) + 6) % 7
 		start := now.AddDate(0, 0, -offset)
 		end := start.AddDate(0, 0, NUM_WEEKS*7)
