@@ -1,18 +1,20 @@
 :root {
-    --blue-grid-light: #c9d2ff;
+    --blue-grid-light: #001eff;
     --border-weekend: #880000;
-    --month-color: #8cff00;
-    --holiday-color: #8dff00;
+    --month-color: #50ff00;
+    --holiday-color: #ddddcc;
     --today-background: #ff0000;;
     --today-text: #ffffff;
-    --day-text: #201037;
+    --day-text: #ffffff;
     --same-day-color: #000000;
     --multi-day-color: #ff00ff;
 
-    --events-dean: #0000ff;
-    --events-strugs: #00ba00;
-    --events-shared: #ff00d9;
-    --events-birthday: #f6a82b;
+    --events-dean: #ffffff;
+    --events-strugs: #ff88aa;
+    --events-shared: #ffff00;
+    --events-birthday: #88d9aa;
+
+    --background: #000000;
 
     --corder-radius: 2px;
     --row-height: 15px;
@@ -29,35 +31,35 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* background-image: url("back.png"); */
-    background-color: rgb(255, 255, 255);
+    background-image: url("back.png");
+    background-color: var(--background);
     background-size: 50%;
     background-repeat: repeat;
 }
 
 .weeks {
     width: 100%;
-    padding: 2px;
+    /* padding: 2px; */
     /* mix-blend-mode: color-burn; */
 }
 
 .week {
-    padding-left: 1px;
-    border-left: 2px solid var(--blue-grid-light);
-    padding-right: 1px;
-    border-right: 2px solid var(--blue-grid-light);
-    border-radius: 3px;
+    /* padding-left: 1px; */
+    /* border-left: 2px solid var(--blue-grid-light); */
+    /* padding-right: 1px; */
+    /* border-right: 2px solid var(--blue-grid-light); */
+    /* border-radius: 3px; */
     flex-direction: row;
 }
 
 .week:first-child {
     padding-top: 1px;
-    border-top: 2px solid var(--blue-grid-light);
+    /* border-top: 2px solid var(--blue-grid-light); */
 }
 
 .week:last-child {
     padding-bottom: 1px;
-    border-bottom: 2px solid var(--blue-grid-light);
+    /* border-bottom: 2px solid var(--blue-grid-light); */
 }
 
 .day {
@@ -112,7 +114,7 @@
 .holiday-label {
     position: relative;
     right: -9px;
-    background-color: white;
+    background-color: var(--background);
     font-size: 13px;
     line-height: 10px;
     overflow: hidden;
@@ -206,7 +208,7 @@
 
 .multi-day-event-name {
     z-index: 2;
-    /* background-color: #ffffff; */
+    background-color: var(--background);
     display: inline;
 }
 
