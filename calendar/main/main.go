@@ -24,7 +24,7 @@ const DITHERED_PATH = "out/dither.bmp"
 
 const NUM_WEEKS = 30
 
-const EXPORT_WIDTH, EXPORT_HEIGHT = 800, 480
+const EXPORT_WIDTH, EXPORT_HEIGHT = 1600, 1200
 
 type SameDayEvent struct {
 	Event     *calendar.Event
@@ -224,7 +224,7 @@ func getScreenshot() {
 func main() {
 	fmt.Println("Started")
 
-	if false {
+	if true {
 		fmt.Println("Taking calendar screenshot")
 		now := time.Now().AddDate(0, 0, -7)
 		offset := (int(now.Weekday()) + 6) % 7

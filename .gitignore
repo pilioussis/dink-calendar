@@ -24,4 +24,5 @@ go.work.sum
 # env file
 .env
 
+old-waveshare-pi-demo
 waveshare-pi-demo

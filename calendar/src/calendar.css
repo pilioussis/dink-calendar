@@ -1,7 +1,7 @@
 :root {
     --blue-grid-light: #001eff;
-    --border-weekend: #880000;
-    --month-color: #50ff00;
+    --border-weekend: #ff0000;
+    --month-color: #d2ff30;
     --holiday-color: #ddddcc;
     --today-background: #ff0000;;
     --today-text: #ffffff;
@@ -17,7 +17,7 @@
     --background: #000000;
 
     --corder-radius: 2px;
-    --row-height: 15px;
+    --row-height: 25px;
 }
 
 .calendar-container {
@@ -31,7 +31,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-image: url("back.png");
+    /* background-image: url("back.png"); */
     background-color: var(--background);
     background-size: 50%;
     background-repeat: repeat;
@@ -63,7 +63,7 @@
 }
 
 .day {
-    width: calc(100% / 8.3);
+    width: calc(100% / 7);
     min-height: 180px;
     border-left-width: 0px;
     border-bottom-width: 1px;
@@ -74,7 +74,7 @@
     padding: 4px 4px 4px 4px;
 
     justify-content: space-between;
-    font-size: 18px;
+    font-size: 25px;
     line-height: var(--row-height);
 }
 
@@ -97,13 +97,13 @@
 }
 
 .month-label {
-    font-size: 17px;
+    font-size: 22px;
     line-height: 15px;
     color: var(--month-color);
     position: absolute;
     border: 2px solid var(--month-color);
     border-radius: 2px;
-    padding: 2px 5px 0px;
+    padding: 4px 5px 0px;
     font-style: italic;
 }
 
@@ -138,8 +138,8 @@
 }
 
 .day-number {
-    font-size: 24px;
-    padding-top: 3px;
+    font-size: 30px;
+    padding-top: 4px;
     color: var(--day-text);
     text-align: center;
 }
@@ -180,7 +180,7 @@
 .same-day-event {
     flex-direction: row;
     display: inline;
-    max-height: 30px;
+    max-height: calc(var(--row-height) * 2);
     overflow: hidden;
 }
 
@@ -224,7 +224,7 @@
 .day:nth-child(5) {
     /* background-color: #f0e5de; */
     border-right-color: var(--border-weekend);
-    border-right-width: 2px;
+    border-right-width: 4px;
     /* border-top-color: var(--border-weekend); */
 }
 
