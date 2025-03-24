@@ -19,46 +19,38 @@ Haven't made my frame yet, here's a photoshopped pic.
 - Written in Go using chromium as a renderer.
 
 ### What's the issue with google cal?
-I like Google Calendar on my phone, but they have optimised their UX for business, not me and my lovely wife.
+I like Google Calendar on my phone, but they've optimised their UX for business, not me and my lovely wife.
 I want to be able to see:
 - Eveything I'm doing
 - Everything my wife is doing
 - Everything we are doing together
 
-Shared calendars, shared events and shared accounts don't quite cut the mustard. There's some sort of CAP theorem going on where:
-- Shared events show duplicates (when sharing calendars, shared events appear twice)
-- I get notiications (if using a 3rd shared calendar that be both own)
-- Isn't asking my lovely wifey to do a short course in
+Sharing personal calendars, creating a 3rd shared calendar and shared events almost get me what I want, except:
+- Shared events show duplicates (when sharing personal calendars, shared events appear twice)
+- No notifications (if using a 3rd shared calendar that we both own)
 
-### What is your beef with calendar UX?
+### My beef with google calendar UX
 - I know the names of the weekdays, I'll save the $1000/cm² e-ink space for my precious events.
 - The month view makes me grumpy. I want to see the next 4+ weeks always. I don't want to see the weeks in the past.
 
-### A sad story (Do not read this if you are easily rustled)
+### A sad story (do not read this if you are easily rustled)
 In an effort to make it look unlike a "techy device" I initially tried to go for a 1940's school classroom style, with washed out fountain pen ink on weathered paper.
 ![photoshopped render](/img/paper-full-color-cropped.png)
 
-I used the rarely used "burn" blend mode in CSS, which you don't see often outside of fancy photo/video editinig software. With the right color spacing, you can acheive a washed-out ink look that retains the texture of the underlying paper in a (somewhat) realistic way.
+Using the "burn" blend mode in CSS with the right color spacing, you can acheive a washed-out ink look that retains the texture of the underlying paper in a (somewhat) realistic way. A fun little trick which you don't often come across outsie of photo/video editinig software.
 
-This was all before I got the panel. I knew I would have to dither it into the 6-color space of Spectra E-ink. But alas I goofed in the following ways:
-- Assuming the panel could render a gradation between white and the 6 colors. eg #ffffff (white) slowly turning into #0000ff (blue). No! Only #ffffff or #0000ff exactly.
-- #00ff00 green would look like green. Alas it is a "washed up winter seaweed"
-- Believing the demo images. They have been carefully selected to not show certain colors, and then color corrected in post. 
+This idea and solution was all before I got the panel. I knew in advance I'd have to dither it into the 6-color space of Spectra E-ink. But alas I goofed in the following ways:
+- Assuming #00ff00 green would look like green. Alas it is a "dark seaweed" type color.
+- Assuming the panel could render some gradation between white and the 6 colors. eg #ffffff (white) -> #8888ff (light blue) -> #0000ff (blue).
+- Assuming the demo images weren't being sneaky. They're been carefully selected to show certain colors, and then color corrected in post.
 
-The 2-step dither I thought I was allowed (eg two color extra colors between #ffffff and #0000ff):
+Here's the 2-step dither I thought I was allowed.
 ![photoshopped render](/img/dither-2.png)
 
-The dither I was actually allowed (no steps):
+Here's the dither I was actually allowed (no steps):
 ![photoshopped render](/img/dither-1.png)
 
-The dither after the e-ink panel masacred it:
+Here's the dither after the e-ink panel masacred it:
 ![photoshopped render](/img/masacre.jpeg)
 
-I'm sure with some calibration you may be able to get that looking closer to the original, but I chose to wait until color E-ink gets better and this ye-oldy design is possible.
-
-
-
-
-
-
-
+I'm sure with some calibration you may be able to improve things, but I'll wait until color E-ink gets better and this ye-oldy design is possible.
