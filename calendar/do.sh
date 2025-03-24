@@ -1,7 +1,7 @@
 set -e
 
 echo "Update python demo file"
-scp /Users/dean/prog/dink-calendar/waveshare-pi-demo/RaspberryPi/python/examples/epd_13in3E_test.py dink:/home/dink/prog/13.3inch_e-Paper_E/RaspberryPi/python/examples/
+scp /Users/dean/prog/dink-calendar/waveshare/RaspberryPi/python/examples/epd_13in3E_test.py dink:/home/dink/prog/13.3inch_e-Paper_E/RaspberryPi/python/examples/
 # scp /Users/dean/prog/dink-calendar/waveshare-pi-demo/python/examples/epd_7in3e_test.py dink:/home/dink/prog/e-Paper/RaspberryPi_JetsonNano/python/examples/
 
 echo "Start"
