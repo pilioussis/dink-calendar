@@ -22,13 +22,17 @@ const CREDENTIALS_FOLDER = "credentials"
 
 const CREDENTIALS_FILE = "credentials.json"
 
-func getClient(config *oauth2.Config, tokenFile string) *http.Client {
-	// Token file - update path as needed
+func getClient(config *oauth2.Config, token string) *http.Client {
+	tokenFile := fmt.Sprintf("%s/%s", CREDENTIALS_FOLDER, token)
 	tok, err := tokenFromFile(tokenFile)
-
-	if err != nil {
+	if err != nil || !tok.Valid() {
+		if err != nil {
+			fmt.Println("Error reading token file:", err)
+		} else {
+			fmt.Println("Token is invalid, getting new token")
+		}
 		tok = getTokenFromWeb(config)
-		saveToken(tokenFile, tok)
+		saveTokenToFile(tokenFile, tok)
 	} else if tok.Expiry.After(time.Now().Add(-12 * time.Hour)) {
 		tok = refreshToken(config, tok, tokenFile)
 	}
@@ -36,7 +40,7 @@ func getClient(config *oauth2.Config, tokenFile string) *http.Client {
 }
 
 func tokenFromFile(file string) (*oauth2.Token, error) {
-	f, err := os.Open(fmt.Sprintf("%s/%s", CREDENTIALS_FOLDER, file))
+	f, err := os.Open(file)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +52,9 @@ func tokenFromFile(file string) (*oauth2.Token, error) {
 
 func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-	fmt.Printf("Go to the following link in your browser then type the auth code: \n%v\n", authURL)
+	fmt.Printf("Go to the following link in your browser: \n%v\n\n", authURL)
+	fmt.Println("Copy the `code` query param of the URL you are redirected to and enter it here")
+	fmt.Println("\nENTER CODE HERE:")
 
 	var authCode string
 	if _, err := fmt.Scan(&authCode); err != nil {
@@ -61,27 +67,18 @@ func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 	return tok
 }
 
-func saveToken(path string, token *oauth2.Token) {
-	fmt.Printf("Saving credential file to: %s\n", path)
-	f, err := os.Create(path)
-	if err != nil {
-		log.Fatalf("Unable to cache oauth token: %v", err)
-	}
-	defer f.Close()
-	json.NewEncoder(f).Encode(token)
-}
-
-func getToken(tokenFile string) *http.Client {
+func getToken(token string) *http.Client {
 	credentials, err := os.ReadFile(fmt.Sprintf("%s/%s", CREDENTIALS_FOLDER, CREDENTIALS_FILE))
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
 
 	config, err := google.ConfigFromJSON(credentials, calendar.CalendarReadonlyScope)
+
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
-	client := getClient(config, tokenFile)
+	client := getClient(config, token)
 
 	return client
 }

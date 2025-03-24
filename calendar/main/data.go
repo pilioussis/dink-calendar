@@ -29,8 +29,8 @@ var CALENDAR_DEAN = CalendarSource{
 
 var CALENDAR_STRUGS = CalendarSource{
 	Name:  "strugs-personal",
-	Token: STRUGS_TOKEN,
-	ID:    "primary",
+	Token: DEAN_TOKEN,
+	ID:    "mcpherson.sarah.a@gmail.com",
 }
 
 var CALENDAR_BIRTHDAYS = CalendarSource{
@@ -144,7 +144,7 @@ func getEventsForDays(dayEventsMap map[string]*DayEvents, events []*calendar.Eve
 					dayEventsMap[getMapKey(current)] = v
 				}
 				if len(e.Summary) < 25 {
-					e.Summary = e.Summary + strings.Repeat("-", 25-len(e.Summary))
+					e.Summary = e.Summary + strings.Repeat("-", max(16-len(e.Summary), 0))
 				}
 
 				var startTime *time.Time
@@ -245,9 +245,9 @@ func getData(start, end time.Time, createStubEvents, useCache bool) map[string]*
 
 	}
 
+	getEventsForDays(dayEventsMap, shared, "e-shared")
 	getEventsForDays(dayEventsMap, dean, "e-dean")
 	getEventsForDays(dayEventsMap, strugs, "e-strugs")
-	getEventsForDays(dayEventsMap, shared, "e-shared")
 	getEventsForDays(dayEventsMap, birthdays.Items, "e-birthday")
 
 	for _, e := range holidays.Items {

@@ -9,10 +9,10 @@
     --same-day-color: #000000;
     --multi-day-color: #ff00ff;
 
-    --events-dean: #ffffff;
+    --events-dean: #c4c4ff;
     --events-strugs: #ff88aa;
     --events-shared: #ffff00;
-    --events-birthday: #88d9aa;
+    --events-birthday: #8dd988;
 
     --background: #000000;
 
@@ -97,14 +97,15 @@
 }
 
 .month-label {
-    font-size: 22px;
+    font-size: 24px;
     line-height: 15px;
     color: var(--month-color);
     position: absolute;
     border: 2px solid var(--month-color);
     border-radius: 2px;
-    padding: 4px 5px 0px;
+    padding: 6px 5px 0px;
     font-style: italic;
+    margin-top: 3px;
 }
 
 .holiday-label-container {
@@ -132,9 +133,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 39px;
     padding-left: 2px;
-    height: 24px;
+    width: 65px;
+    height: 33px;
 }
 
 .day-number {

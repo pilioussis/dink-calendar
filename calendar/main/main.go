@@ -22,7 +22,7 @@ const OUT_HTML = "out/cal.html"
 const FULL_COLOR_PATH = "out/cal.png"
 const DITHERED_PATH = "out/dither.bmp"
 
-const NUM_WEEKS = 30
+const NUM_WEEKS = 8
 
 const EXPORT_WIDTH, EXPORT_HEIGHT = 1600, 1200
 
@@ -61,6 +61,7 @@ type Week struct {
 
 type Calendar struct {
 	Weeks []Week
+	Start time.Time
 }
 
 func getMapKey(t time.Time) string {
@@ -92,10 +93,9 @@ func generateCalendar(start, now time.Time, dayEventsMap map[string]*DayEvents) 
 			if !ok {
 				dayEvents = &DayEvents{}
 			}
-
 			days = append(days, Day{
 				Date:           currDay,
-				IsToday:        currDay == now,
+				IsToday:        currDay.Format("2006-01-02") == now.Format("2006-01-02"),
 				SameDayEvents:  dayEvents.SameDay,
 				MultiDayEvents: dayEvents.MultiDay,
 				MultiDayMax:    dayEvents.MultiDayMax,
@@ -129,7 +129,7 @@ func generateCalendar(start, now time.Time, dayEventsMap map[string]*DayEvents) 
 		}
 	}
 
-	return Calendar{Weeks: weeks}
+	return Calendar{Weeks: weeks, Start: start}
 }
 
 func CreateCalendarHTML(start, now time.Time, dayEventsMap map[string]*DayEvents) {
@@ -140,7 +140,8 @@ func CreateCalendarHTML(start, now time.Time, dayEventsMap map[string]*DayEvents
 	}
 
 	t := template.Must(template.New("cal").Funcs(template.FuncMap{
-		"isSameDate": isSameDate,
+		"isSameDate":       isSameDate,
+		"isBeforeFirstDay": isBeforeFirstDay,
 	}).Parse(string(b)))
 
 	f, err := os.Create(OUT_HTML)
@@ -226,12 +227,12 @@ func main() {
 
 	if true {
 		fmt.Println("Taking calendar screenshot")
-		now := time.Now().AddDate(0, 0, -7)
+		now := time.Now()
 		offset := (int(now.Weekday()) + 6) % 7
 		start := now.AddDate(0, 0, -offset)
 		end := start.AddDate(0, 0, NUM_WEEKS*7)
 
-		useCache := true
+		useCache := false
 		createStubEvents := true
 
 		dayEventsMap := getData(start, end, createStubEvents, useCache)

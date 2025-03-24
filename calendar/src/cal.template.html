@@ -42,7 +42,7 @@
               {{ range $day.MultiDayEvents }}
                 <br/>
                 <div class="multi-day-event {{.Class}}" style="--row-position:{{.Position}}">
-                  {{ if isSameDate $day.Date .StartDate }}
+                  {{ if or (isSameDate $day.Date .StartDate) (isBeforeFirstDay $day.Date $.Start .StartDate)}}
                     <div class="multi-day-event-name">
                       {{ if .StartTime }}
                         <span class="time">{{ .StartTime.Format "3:04" }}</span>
@@ -50,9 +50,9 @@
                       {{ .Event.Summary }}
                     </div>
                   {{ else if isSameDate $day.Date .EndDate }}
-                    <div class="multi-day-event-cont">-----------------<span class="terminator">¦</span></div>
+                    <div class="multi-day-event-cont">----------<span class="terminator">¦</span></div>
                   {{ else }}
-                    <div class="multi-day-event-cont">---------------------</div>
+                    <div class="multi-day-event-cont">----------------</div>
                   {{ end }}
                 </div>
               {{ end }}
