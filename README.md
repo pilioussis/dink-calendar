@@ -2,15 +2,14 @@
 Hello, its me. I didn't like the other calendars out there so I made my own. If you like bleeding edge E-ink as much as I do, you might find this interesting.
 
 ### Let's lead with the piccies
-These panels have some of the best color representation (as of Nov 2024), although their refresh time is sluggish. (Not a problem if you only need to re-render a couple of times a day)
-[![Watch the video](/img/render.jpg)](https://raw.githubusercontent.com/pilioussis/dink-calendar/main/img/output.mp4)
+Here's a video of a refresh cycle.
 
-Photoshopped this while I make my frame.
+
+https://github.com/user-attachments/assets/c472b0ad-aced-4d1a-b8ad-b3a8ebeae87f
+
+
+Haven't made my frame yet, here's a photoshopped pic.
 ![photoshopped render](/img/render.jpg)
-
-Another go
-[![Watch the video](/img/render.jpg)](/img/output.mp4)
-
 
 ### What is it?
 - A spiffy new (as of Nov 2024) Spectra 6 E-ink panel, driven by a Pi + HAT.
