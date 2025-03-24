@@ -16,8 +16,8 @@ https://github.com/user-attachments/assets/c472b0ad-aced-4d1a-b8ad-b3a8ebeae87f
 Google Calendar have optimized their UX for business, not me and my lovely wife.
 We want to be able to see:
 - Everything I'm doing
-- Everything she's is doing
-- Everything we are doing together
+- Everything she's doing
+- Everything we're doing together
 
 Solutions like share personal calendars, creating a 3rd shared calendar and shared events _almost_ get me what I need, except:
 - Shared events show duplicates when personal calendars are shared to one another.
