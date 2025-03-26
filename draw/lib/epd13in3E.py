@@ -27,11 +27,9 @@
 # THE SOFTWARE.
 #
 import time
-import epdconfig
+from . import epdconfig
 
-import PIL
 from PIL import Image
-import io
 
 EPD_WIDTH       = 1200
 EPD_HEIGHT      = 1600

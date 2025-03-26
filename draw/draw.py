@@ -1,28 +1,28 @@
 ﻿import sys
-import os
 from PIL import Image
-import epd13in3E
-
-picdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'pic')
-libdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'lib')
-
-if os.path.exists(libdir):
-    sys.path.append(libdir)
+from lib import epd13in3E
 
 epd = epd13in3E.EPD()
 
+if len(sys.argv) > 1:
+    filename = sys.argv[1]
+else:
+    print("No filename provided. Exiting.")
+    sys.exit(1)
+
+
 try:
     epd.Init()
-    print("clearing...")
+    print("clearing panel")
     epd.Clear()
 
-    Himage = Image.open(os.path.join(picdir, 'dither.bmp'))
+    Himage = Image.open(filename)
     epd.display(epd.getbuffer(Himage))
 
-    print("goto sleep...")
+    print("sending panel to sleep")
     epd.sleep()
 except:
-    print("exception raised...")
+    print("exception raised when drawing to panel")
     epd.sleep()
 
 

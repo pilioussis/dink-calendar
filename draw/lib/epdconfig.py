@@ -48,6 +48,7 @@ EPD_PWR_PIN     =18
  
 find_dirs = [
     os.path.dirname(os.path.realpath(__file__)),
+    '/home/dink/prog/dink-calendar/draw/lib',
     '/usr/local/lib',
     '/usr/lib',
 ]
