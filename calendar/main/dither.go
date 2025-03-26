@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"log"
+	"log/slog"
 	"os"
 	"strconv"
 
@@ -91,15 +91,18 @@ func splitColors(palette []color.Color, steps int, fadeToBlack bool) []color.Col
 
 }
 
-func Dither(inPath, outPath string) {
+func Dither(inPath, outPath string) error {
 	skip := false
 
 	outfile, err := os.Create(outPath)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("failed to create output file: %w", err)
 	}
 
 	src, err := getImageFromFilePath(inPath)
+	if err != nil {
+		return fmt.Errorf("source image to dither does not exist: %w", err)
+	}
 
 	// Set the expected size that you want:
 	dd := image.NewRGBA(image.Rect(0, 0, EXPORT_WIDTH, EXPORT_HEIGHT))
@@ -110,9 +113,6 @@ func Dither(inPath, outPath string) {
 	draw.NearestNeighbor.Scale(dd, dd.Rect, src, src.Bounds(), draw.Over, nil)
 
 	img := image.Image(dd)
-	if err != nil {
-		log.Panicln("Image does not exist", img)
-	}
 
 	palette := splitColors(COLOR_6, 0, false)
 
@@ -124,8 +124,9 @@ func Dither(inPath, outPath string) {
 	}
 
 	if err = bmp.Encode(outfile, img); err != nil {
-		log.Printf("failed to encode: %v", err)
+		return fmt.Errorf("failed to encode bmp: %w", err)
 	}
 
-	fmt.Println("Created dither")
+	slog.Info("Created dither")
+	return nil
 }

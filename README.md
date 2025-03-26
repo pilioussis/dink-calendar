@@ -33,7 +33,6 @@ Solutions like share personal calendars, creating a 3rd shared calendar and shar
 - The display refresh is comically slow, and makes a hissing noise.
 
 ## The final product
-Here's a photoshopped pic I made to try different frames before I make one.
 ![photoshopped render](/img/render.jpg)
 
 ## A sad story of what could have been

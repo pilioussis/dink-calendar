@@ -7,6 +7,7 @@ import (
 	"image/draw"
 	"image/png"
 	"log"
+	"log/slog"
 	"os"
 	"os/exec"
 	"time"
@@ -132,7 +133,7 @@ func generateCalendar(start, now time.Time, dayEventsMap map[string]*DayEvents) 
 	return Calendar{Weeks: weeks, Start: start}
 }
 
-func CreateCalendarHTML(start, now time.Time, dayEventsMap map[string]*DayEvents) {
+func CreateCalendarHTML(start, now time.Time, dayEventsMap map[string]*DayEvents) error {
 	c := generateCalendar(start, now, dayEventsMap)
 	b, err := os.ReadFile(IN_HTML_TEMPLATE)
 	if err != nil {
@@ -146,20 +147,19 @@ func CreateCalendarHTML(start, now time.Time, dayEventsMap map[string]*DayEvents
 
 	f, err := os.Create(OUT_HTML)
 	if err != nil {
-		log.Panicf("Error creating HTML: %v", err)
+		return fmt.Errorf("error creating html file: %w", err)
 	}
-
 	defer f.Close()
+	slog.Info("Created html")
 
 	err = t.Execute(f, c)
-	fmt.Println("Created html")
-
 	if err != nil {
-		log.Panicf("Error creating HTML: %v", err)
+		return fmt.Errorf("error rendering html template: %w", err)
 	}
+	return nil
 }
 
-func trimScreenshot() {
+func trimScreenshot() error {
 	// Open the original PNG
 	inFile, err := os.Open(FULL_COLOR_PATH)
 	if err != nil {
@@ -188,17 +188,18 @@ func trimScreenshot() {
 	// Write the new image to file
 	outFile, err := os.Create(FULL_COLOR_PATH)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("failed to create outFile: %w", err)
 	}
 	defer outFile.Close()
 
 	if err = png.Encode(outFile, dst); err != nil {
-		panic(err)
+		return fmt.Errorf("failed to encode png: %w", err)
 	}
-	fmt.Println("Trimmed png")
+	slog.Info("Trimmed png")
+	return nil
 }
 
-func getScreenshot() {
+func getScreenshot() error {
 	const paddingBottom = 200
 
 	cmd := exec.Command(
@@ -214,19 +215,23 @@ func getScreenshot() {
 	out, err := cmd.Output()
 
 	if err != nil {
-		fmt.Println("Error creating image from HTML:", err, out)
-		return
+		slog.Error("Error creating image from HTML", "error", err, "output", out)
+		return err
 	}
-	fmt.Println("Created png")
+	slog.Info("Created png")
 
-	trimScreenshot()
+	err = trimScreenshot()
+	if err != nil {
+		return fmt.Errorf("failed to trim screenshot: %w", err)
+	}
+	return nil
 }
 
 func main() {
-	fmt.Println("Started")
+	slog.Info("Started")
 
 	if true {
-		fmt.Println("Taking calendar screenshot")
+		slog.Info("Taking calendar screenshot")
 		now := time.Now()
 		offset := (int(now.Weekday()) + 6) % 7
 		start := now.AddDate(0, 0, -offset)
@@ -235,10 +240,26 @@ func main() {
 		useCache := false
 		createStubEvents := true
 
-		dayEventsMap := getData(start, end, createStubEvents, useCache)
-		CreateCalendarHTML(start, now, dayEventsMap)
-		getScreenshot()
+		dayEventsMap, err := getData(start, end, createStubEvents, useCache)
+		if err != nil {
+			slog.Error("Error getting data", "error", err)
+			panic(err)
+		}
+		err = CreateCalendarHTML(start, now, dayEventsMap)
+		if err != nil {
+			slog.Error("Error creating html", "error", err)
+			panic(err)
+		}
+		err = getScreenshot()
+		if err != nil {
+			slog.Error("Error getting screenshot", "error", err)
+			panic(err)
+		}
 	}
 
-	Dither(FULL_COLOR_PATH, DITHERED_PATH)
+	err := Dither(FULL_COLOR_PATH, DITHERED_PATH)
+	if err != nil {
+		slog.Error("Error dithering", "error", err)
+		panic(err)
+	}
 }

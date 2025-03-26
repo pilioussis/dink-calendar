@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"sort"
 	"strings"
@@ -53,17 +54,14 @@ func getCacheFile(cal CalendarSource) string {
 	return fmt.Sprintf("%s/%s.json", CACHE_FOLDER, cal.Name)
 }
 
-func getDataForCal(start, end time.Time, cal CalendarSource, useCache bool) *calendar.Events {
-	if useCache {
-		return getCachedData(cal)
-	}
-	client := getToken(cal.Token)
+func getDataForCal(start, end time.Time, cal CalendarSource) (*calendar.Events, error) {
+	client := getClient(cal.Token)
 	srv, err := calendar.New(client)
 	if err != nil {
-		log.Fatalf("Unable to retrieve Calendar client: %v", err)
+		return nil, fmt.Errorf("unable to retrieve Calendar client: %w", err)
 	}
 
-	fmt.Printf("Get events: %s", cal.Name)
+	slog.Info("Get events", "cal", cal.Name)
 	events, err := srv.Events.List(cal.ID).
 		ShowDeleted(false).
 		SingleEvents(true).
@@ -72,27 +70,27 @@ func getDataForCal(start, end time.Time, cal CalendarSource, useCache bool) *cal
 		OrderBy("startTime").
 		Do()
 	if err != nil {
-		log.Fatalf("\nUnable to retrieve events: %v", err)
+		return nil, fmt.Errorf("unable to retrieve events: %w", err)
 	}
 
 	os.MkdirAll(CACHE_FOLDER, os.ModePerm)
 	file, err := os.Create(getCacheFile(cal))
 	if err != nil {
-		log.Fatal("\nSaving cache error:", err)
+		return nil, fmt.Errorf("saving cache error: %w", err)
 	}
 	defer file.Close()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
 	if err := encoder.Encode(events); err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("error encoding events: %w", err)
 	}
 
-	fmt.Println("\rGot events:", len(events.Items), cal.Name)
-	return events
+	slog.Info("Got events:", "event_count", len(events.Items), "name", cal.Name)
+	return events, nil
 }
 
-func getEventsForDays(dayEventsMap map[string]*DayEvents, events []*calendar.Event, calname string) {
+func addEventsToDays(dayEventsMap map[string]*DayEvents, events []*calendar.Event, calname string) {
 
 	lowestFreeSpot := make(map[int]time.Time)
 
@@ -120,6 +118,16 @@ func getEventsForDays(dayEventsMap map[string]*DayEvents, events []*calendar.Eve
 				startTime = nil
 			}
 			v.SameDay = append(v.SameDay, &SameDayEvent{Event: e, StartTime: startTime, Class: calname})
+
+			sort.Slice(v.SameDay, func(i, j int) bool {
+				if v.SameDay[i].StartTime == nil {
+					return false
+				}
+				if v.SameDay[j].StartTime == nil {
+					return true
+				}
+				return v.SameDay[i].StartTime.Before(*v.SameDay[j].StartTime)
+			})
 		} else {
 			for pos, t := range lowestFreeSpot {
 				if start.After(t) {
@@ -189,7 +197,7 @@ func filterShared(events []*calendar.Event, email string) ([]*calendar.Event, []
 }
 
 func getCachedData(cal CalendarSource) *calendar.Events {
-	fmt.Println("Got cached events:", cal.Name)
+	slog.Info("Got cached events", "name", cal.Name)
 	cache_str, err := os.ReadFile(getCacheFile(cal))
 	var events *calendar.Events
 
@@ -205,15 +213,49 @@ func getCachedData(cal CalendarSource) *calendar.Events {
 	return events
 }
 
-func getData(start, end time.Time, createStubEvents, useCache bool) map[string]*DayEvents {
-	dayEventsMap := make(map[string]*DayEvents)
-	dean_pre := getDataForCal(start, end, CALENDAR_DEAN, useCache)
-	strugs_pre := getDataForCal(start, end, CALENDAR_STRUGS, useCache)
-	birthdays := getDataForCal(start, end, CALENDAR_BIRTHDAYS, useCache)
-	holidays := getDataForCal(start, end, CALENDAR_HOLIDAYS, useCache)
+type SeparateCalendars struct {
+	Dean      *calendar.Events
+	Strugs    *calendar.Events
+	Birthdays *calendar.Events
+	Holidays  *calendar.Events
+}
 
-	dean, shared := filterShared(dean_pre.Items, STRUGS_EMAIL)
-	strugs, _ := filterShared(strugs_pre.Items, DEAN_EMAIL)
+func getData(start, end time.Time, createStubEvents, useCache bool) (map[string]*DayEvents, error) {
+	dayEventsMap := make(map[string]*DayEvents)
+
+	var separateCalendars SeparateCalendars
+
+	if useCache {
+		separateCalendars.Dean = getCachedData(CALENDAR_DEAN)
+	} else {
+		dean_pre, err := getDataForCal(start, end, CALENDAR_DEAN)
+		if err != nil {
+			slog.Error("Error getting events for dean", "error", err)
+			return nil, err
+		}
+		strugs_pre, err := getDataForCal(start, end, CALENDAR_STRUGS)
+		if err != nil {
+			slog.Error("Error getting events for strugs", "error", err)
+			return nil, err
+		}
+		birthdays, err := getDataForCal(start, end, CALENDAR_BIRTHDAYS)
+		if err != nil {
+			slog.Error("Error getting events for birthdays", "error", err)
+			return nil, err
+		}
+		holidays, err := getDataForCal(start, end, CALENDAR_HOLIDAYS)
+		if err != nil {
+			slog.Error("Error getting events for holidays", "error", err)
+			return nil, err
+		}
+		separateCalendars.Dean = dean_pre
+		separateCalendars.Strugs = strugs_pre
+		separateCalendars.Birthdays = birthdays
+		separateCalendars.Holidays = holidays
+	}
+
+	dean, shared := filterShared(separateCalendars.Dean.Items, STRUGS_EMAIL)
+	strugs, _ := filterShared(separateCalendars.Strugs.Items, DEAN_EMAIL)
 
 	if createStubEvents {
 		times := [][2]string{
@@ -242,15 +284,14 @@ func getData(start, end time.Time, createStubEvents, useCache bool) map[string]*
 			}
 			dean = append(dean, fakeEvent)
 		}
-
 	}
 
-	getEventsForDays(dayEventsMap, shared, "e-shared")
-	getEventsForDays(dayEventsMap, dean, "e-dean")
-	getEventsForDays(dayEventsMap, strugs, "e-strugs")
-	getEventsForDays(dayEventsMap, birthdays.Items, "e-birthday")
+	addEventsToDays(dayEventsMap, shared, "e-shared")
+	addEventsToDays(dayEventsMap, dean, "e-dean")
+	addEventsToDays(dayEventsMap, strugs, "e-strugs")
+	addEventsToDays(dayEventsMap, separateCalendars.Birthdays.Items, "e-birthday")
 
-	for _, e := range holidays.Items {
+	for _, e := range separateCalendars.Holidays.Items {
 		kTime := getTimeFromString(e.Start.DateTime, e.Start.Date)
 		v, ok := dayEventsMap[getMapKey(kTime)]
 		if !ok {
@@ -261,5 +302,5 @@ func getData(start, end time.Time, createStubEvents, useCache bool) map[string]*
 		v.Holiday = e.Summary
 	}
 
-	return dayEventsMap
+	return dayEventsMap, nil
 }
