@@ -15,8 +15,6 @@ import (
 	calendar "google.golang.org/api/calendar/v3"
 )
 
-const PROJ_PATH = "/code"
-
 const IN_HTML_TEMPLATE = "src/cal.template.html"
 const OUT_HTML = "out/cal.html"
 
@@ -170,7 +168,7 @@ func trimScreenshot() error {
 	// Decode into an Image
 	src, err := png.Decode(inFile)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("failed to decode png: %w", err)
 	}
 
 	// Desired width/height
@@ -202,17 +200,25 @@ func trimScreenshot() error {
 func getScreenshot() error {
 	const paddingBottom = 200
 
+	wd, err := os.Getwd()
+	if err != nil {
+		slog.Error("Error getting current working directory", "error", err)
+		return err
+	}
+
 	cmd := exec.Command(
 		"chromium",
 		"--headless",
 		"--no-sandbox",
+		"--disable-gpu",
 		fmt.Sprintf("--window-size=%v,%v", EXPORT_WIDTH, EXPORT_HEIGHT+paddingBottom),
 		"--force-device-scale-factor=1",
 		"--virtual-time-budget=50",
-		fmt.Sprintf("--screenshot=%s/%s", PROJ_PATH, FULL_COLOR_PATH),
-		fmt.Sprintf("file://%s/%s", PROJ_PATH, OUT_HTML),
+		fmt.Sprintf("--screenshot=%s/%s", wd, FULL_COLOR_PATH),
+		fmt.Sprintf("file://%s/%s", wd, OUT_HTML),
 	)
 	out, err := cmd.Output()
+	slog.Info("Took screenshot", "output", out)
 
 	if err != nil {
 		slog.Error("Error creating image from HTML", "error", err, "output", out)

@@ -24,25 +24,25 @@ const STRUGS_EMAIL = "mcpherson.sarah.a@gmail.com"
 
 var CALENDAR_DEAN = CalendarSource{
 	Name:  "dean-personal",
-	Token: DEAN_TOKEN,
+	Token: OAUTH_TOKEN_FILE,
 	ID:    "primary",
 }
 
 var CALENDAR_STRUGS = CalendarSource{
 	Name:  "strugs-personal",
-	Token: DEAN_TOKEN,
+	Token: OAUTH_TOKEN_FILE,
 	ID:    "mcpherson.sarah.a@gmail.com",
 }
 
 var CALENDAR_BIRTHDAYS = CalendarSource{
 	Name:  "birthdays",
-	Token: DEAN_TOKEN,
+	Token: OAUTH_TOKEN_FILE,
 	ID:    "403994ecc2585854c8e932c00d1ca82c7cb9b423fdab94e0b5b6be2c56335b9d@group.calendar.google.com",
 }
 
 var CALENDAR_HOLIDAYS = CalendarSource{
 	Name:  "holidays",
-	Token: DEAN_TOKEN,
+	Token: OAUTH_TOKEN_FILE,
 	ID:    "ee92ea54f1e2e5fab5aee1a88873031d57d2ea0b164a6968a4a943c9121bf292@group.calendar.google.com",
 }
 
@@ -220,72 +220,41 @@ type SeparateCalendars struct {
 	Holidays  *calendar.Events
 }
 
-func getData(start, end time.Time, createStubEvents, useCache bool) (map[string]*DayEvents, error) {
-	dayEventsMap := make(map[string]*DayEvents)
-
-	var separateCalendars SeparateCalendars
-
-	if useCache {
-		separateCalendars.Dean = getCachedData(CALENDAR_DEAN)
-	} else {
-		dean_pre, err := getDataForCal(start, end, CALENDAR_DEAN)
-		if err != nil {
-			slog.Error("Error getting events for dean", "error", err)
-			return nil, err
-		}
-		strugs_pre, err := getDataForCal(start, end, CALENDAR_STRUGS)
-		if err != nil {
-			slog.Error("Error getting events for strugs", "error", err)
-			return nil, err
-		}
-		birthdays, err := getDataForCal(start, end, CALENDAR_BIRTHDAYS)
-		if err != nil {
-			slog.Error("Error getting events for birthdays", "error", err)
-			return nil, err
-		}
-		holidays, err := getDataForCal(start, end, CALENDAR_HOLIDAYS)
-		if err != nil {
-			slog.Error("Error getting events for holidays", "error", err)
-			return nil, err
-		}
-		separateCalendars.Dean = dean_pre
-		separateCalendars.Strugs = strugs_pre
-		separateCalendars.Birthdays = birthdays
-		separateCalendars.Holidays = holidays
+func getGoogleCalendars(start, end time.Time, useCache bool) (*SeparateCalendars, error) {
+	dean_pre, err := getDataForCal(start, end, CALENDAR_DEAN)
+	if err != nil {
+		fmt.Errorf("error getting events for dean: %w", err)
+		return nil, err
+	}
+	strugs_pre, err := getDataForCal(start, end, CALENDAR_STRUGS)
+	if err != nil {
+		fmt.Errorf("error getting events for strugs: %w", err)
+		return nil, err
+	}
+	birthdays, err := getDataForCal(start, end, CALENDAR_BIRTHDAYS)
+	if err != nil {
+		fmt.Errorf("error getting events for birthdays: %w", err)
+		return nil, err
+	}
+	holidays, err := getDataForCal(start, end, CALENDAR_HOLIDAYS)
+	if err != nil {
+		fmt.Errorf("error getting events for holidays: %w", err)
+		return nil, err
 	}
 
+	return &SeparateCalendars{
+		Dean:      dean_pre,
+		Strugs:    strugs_pre,
+		Birthdays: birthdays,
+		Holidays:  holidays,
+	}, nil
+}
+
+func processCalendars(separateCalendars *SeparateCalendars, createStubEvents bool) map[string]*DayEvents {
 	dean, shared := filterShared(separateCalendars.Dean.Items, STRUGS_EMAIL)
 	strugs, _ := filterShared(separateCalendars.Strugs.Items, DEAN_EMAIL)
 
-	if createStubEvents {
-		times := [][2]string{
-			{"2025-02-12T13:15:00+11:00", "2025-02-16"},
-		}
-		stub_str, err := os.ReadFile("src/stub.json")
-		if err != nil {
-			log.Panicln("Event stub file not found:", err)
-		}
-
-		for _, t := range times {
-			var fakeEvent *calendar.Event
-			err := json.Unmarshal([]byte(stub_str), &fakeEvent)
-			if err != nil {
-				log.Panicln("Unable to create fake events", err)
-			}
-			if strings.Contains(t[0], ":") {
-				fakeEvent.Start.DateTime = t[0]
-			} else {
-				fakeEvent.Start.Date = t[0]
-			}
-			if strings.Contains(t[1], ":") {
-				fakeEvent.End.DateTime = t[1]
-			} else {
-				fakeEvent.End.Date = t[1]
-			}
-			dean = append(dean, fakeEvent)
-		}
-	}
-
+	dayEventsMap := make(map[string]*DayEvents)
 	addEventsToDays(dayEventsMap, shared, "e-shared")
 	addEventsToDays(dayEventsMap, dean, "e-dean")
 	addEventsToDays(dayEventsMap, strugs, "e-strugs")
@@ -301,6 +270,56 @@ func getData(start, end time.Time, createStubEvents, useCache bool) (map[string]
 		}
 		v.Holiday = e.Summary
 	}
+	return dayEventsMap
+}
+
+func addStubEvents(separateCalendars *SeparateCalendars) {
+	times := [][2]string{
+		{"2025-02-12T13:15:00+11:00", "2025-02-16"},
+	}
+	stub_str, err := os.ReadFile("src/stub.json")
+	if err != nil {
+		log.Panicln("Event stub file not found:", err)
+	}
+
+	for _, t := range times {
+		var fakeEvent *calendar.Event
+		err := json.Unmarshal([]byte(stub_str), &fakeEvent)
+		if err != nil {
+			log.Panicln("Unable to create fake events", err)
+		}
+		if strings.Contains(t[0], ":") {
+			fakeEvent.Start.DateTime = t[0]
+		} else {
+			fakeEvent.Start.Date = t[0]
+		}
+		if strings.Contains(t[1], ":") {
+			fakeEvent.End.DateTime = t[1]
+		} else {
+			fakeEvent.End.Date = t[1]
+		}
+		separateCalendars.Dean.Items = append(separateCalendars.Dean.Items, fakeEvent)
+	}
+}
+
+func getData(start, end time.Time, createStubEvents, useCache bool) (map[string]*DayEvents, error) {
+	var err error
+	var separateCalendars = &SeparateCalendars{}
+
+	if useCache {
+		separateCalendars.Dean = getCachedData(CALENDAR_DEAN)
+	} else {
+		separateCalendars, err = getGoogleCalendars(start, end, useCache)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if createStubEvents {
+		addStubEvents(separateCalendars)
+	}
+
+	dayEventsMap := processCalendars(separateCalendars, createStubEvents)
 
 	return dayEventsMap, nil
 }

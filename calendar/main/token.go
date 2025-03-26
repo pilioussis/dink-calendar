@@ -14,7 +14,7 @@ import (
 	calendar "google.golang.org/api/calendar/v3"
 )
 
-const DEAN_TOKEN = "dean_token.json"
+const OAUTH_TOKEN_FILE = "token.json"
 const CREDENTIALS_FOLDER = "credentials"
 const CREDENTIALS_FILE = "credentials.json"
 

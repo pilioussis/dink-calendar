@@ -24,4 +24,6 @@ go.work.sum
 # env file
 .env
 
+
+calendar/credentials
 old-waveshare-pi-demo
