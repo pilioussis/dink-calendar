@@ -234,7 +234,7 @@ func getScreenshot() error {
 	return nil
 }
 
-func main() {
+func create() {
 	slog.Info("Started")
 
 	if true {
@@ -244,7 +244,7 @@ func main() {
 		start := now.AddDate(0, 0, -offset)
 		end := start.AddDate(0, 0, NUM_WEEKS*7)
 
-		useCache := false
+		useCache := true
 		createStubEvents := true
 
 		dayEventsMap, err := getData(start, end, createStubEvents, useCache)
@@ -268,5 +268,50 @@ func main() {
 	if err != nil {
 		slog.Error("Error dithering", "error", err)
 		panic(err)
+	}
+}
+
+func copyFile(inputFile, outputFile string) {
+	input, err := os.ReadFile(inputFile)
+	if err != nil {
+		slog.Error("Error reading input file", "error", err)
+	}
+
+	err = os.WriteFile(outputFile, input, 0644)
+	if err != nil {
+		slog.Error("Error writing to output file", "error", err)
+	} else {
+		slog.Info("File copied successfully", "source", inputFile, "destination", outputFile)
+	}
+}
+
+func runShellCommand(command string, args ...string) error {
+	cmd := exec.Command(command, args...)
+	err := cmd.Run()
+	if err != nil {
+		slog.Error("Error running command", "command", command, "args", args, "error", err)
+		return err
+	}
+	slog.Info("Command executed successfully", "command", command, "args", args)
+	return nil
+}
+
+func serve() {
+	for {
+		slog.Info("Running loop")
+		create()
+		// copyFile("./out/dither.bmp", "../draw/pic/dither.bmp")
+		runShellCommand("cd ../draw && python draw.py ~/prog/dink-calendar/calendar/out/dither.bmp")
+		break
+		// time.Sleep(60 * time.Second)
+	}
+}
+
+func main() {
+	switch os.Args[1] {
+	case "serve":
+		serve()
+	default:
+		create()
 	}
 }
