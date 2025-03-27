@@ -323,7 +323,13 @@ func serve() {
 }
 
 func main() {
-	switch os.Args[1] {
+	args := "default"
+
+	if len(os.Args) >= 2 {
+		fmt.Println("Args", os.Args)
+		args = os.Args[1]
+	}
+	switch args {
 	case "serve":
 		serve()
 	default:
