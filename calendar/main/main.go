@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 
 	calendar "google.golang.org/api/calendar/v3"
@@ -24,6 +25,8 @@ const DITHERED_PATH = "out/dither.bmp"
 const NUM_WEEKS = 8
 
 const EXPORT_WIDTH, EXPORT_HEIGHT = 1600, 1200
+
+const LOOP_WAIT = 15 * time.Minute
 
 type SameDayEvent struct {
 	Event     *calendar.Event
@@ -244,7 +247,7 @@ func create() {
 		start := now.AddDate(0, 0, -offset)
 		end := start.AddDate(0, 0, NUM_WEEKS*7)
 
-		useCache := true
+		useCache := false
 		createStubEvents := true
 
 		dayEventsMap, err := getData(start, end, createStubEvents, useCache)
@@ -285,9 +288,15 @@ func copyFile(inputFile, outputFile string) {
 	}
 }
 
-func runShellCommand(command string, args ...string) error {
+func runShellCommand(dir, command string, args ...string) error {
 	cmd := exec.Command(command, args...)
-	err := cmd.Run()
+	cmd.Dir = dir
+	err := cmd.Start()
+	if err != nil {
+		slog.Error("Error starting command", "command", command, "args", args, "error", err)
+		return err
+	}
+	err = cmd.Wait()
 	if err != nil {
 		slog.Error("Error running command", "command", command, "args", args, "error", err)
 		return err
@@ -300,10 +309,16 @@ func serve() {
 	for {
 		slog.Info("Running loop")
 		create()
-		// copyFile("./out/dither.bmp", "../draw/pic/dither.bmp")
-		runShellCommand("cd ../draw && python draw.py ~/prog/dink-calendar/calendar/out/dither.bmp")
-		break
-		// time.Sleep(60 * time.Second)
+
+		ditheredFullPath, err := filepath.Abs(DITHERED_PATH)
+		if err != nil {
+			slog.Error("Error getting absolute path for DITHERED_PATH", "error", err)
+			panic(err)
+		}
+		runShellCommand("../draw", "python", "draw.py", ditheredFullPath)
+
+		slog.Info("Waiting", "WAIT", LOOP_WAIT)
+		time.Sleep(LOOP_WAIT)
 	}
 }
 
