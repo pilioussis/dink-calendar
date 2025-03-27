@@ -127,6 +127,6 @@ func Dither(inPath, outPath string) error {
 		return fmt.Errorf("failed to encode bmp: %w", err)
 	}
 
-	slog.Info("Created dither")
+	slog.Info("Created dither", "outPath", outPath)
 	return nil
 }

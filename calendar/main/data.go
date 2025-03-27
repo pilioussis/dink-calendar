@@ -196,7 +196,14 @@ func filterShared(events []*calendar.Event, email string) ([]*calendar.Event, []
 	return individual, shared
 }
 
-func getCachedData(cal CalendarSource) *calendar.Events {
+type SeparateCalendars struct {
+	Dean      *calendar.Events
+	Strugs    *calendar.Events
+	Birthdays *calendar.Events
+	Holidays  *calendar.Events
+}
+
+func getCachedData(cal CalendarSource) *SeparateCalendars {
 	slog.Info("Got cached events", "name", cal.Name)
 	cache_str, err := os.ReadFile(getCacheFile(cal))
 	var events *calendar.Events
@@ -210,14 +217,12 @@ func getCachedData(cal CalendarSource) *calendar.Events {
 		log.Panicln("Error loading cache", err)
 	}
 
-	return events
-}
-
-type SeparateCalendars struct {
-	Dean      *calendar.Events
-	Strugs    *calendar.Events
-	Birthdays *calendar.Events
-	Holidays  *calendar.Events
+	return &SeparateCalendars{
+		Dean:      events,
+		Strugs:    &calendar.Events{},
+		Birthdays: &calendar.Events{},
+		Holidays:  &calendar.Events{},
+	}
 }
 
 func getGoogleCalendars(start, end time.Time, useCache bool) (*SeparateCalendars, error) {
@@ -307,7 +312,7 @@ func getData(start, end time.Time, createStubEvents, useCache bool) (map[string]
 	var separateCalendars = &SeparateCalendars{}
 
 	if useCache {
-		separateCalendars.Dean = getCachedData(CALENDAR_DEAN)
+		separateCalendars = getCachedData(CALENDAR_DEAN)
 	} else {
 		separateCalendars, err = getGoogleCalendars(start, end, useCache)
 		if err != nil {

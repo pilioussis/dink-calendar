@@ -264,3 +264,11 @@
 }
 
 
+.timestamp {
+    position: absolute;
+    font-size: 23px;
+    bottom: 120px;
+    right: 4px;
+    color: green;
+    background-color: black;
+}

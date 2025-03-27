@@ -59,8 +59,9 @@ type Week struct {
 }
 
 type Calendar struct {
-	Weeks []Week
-	Start time.Time
+	Weeks     []Week
+	Start     time.Time
+	CreatedAt string
 }
 
 func getMapKey(t time.Time) string {
@@ -128,7 +129,7 @@ func generateCalendar(start, now time.Time, dayEventsMap map[string]*DayEvents) 
 		}
 	}
 
-	return Calendar{Weeks: weeks, Start: start}
+	return Calendar{Weeks: weeks, Start: start, CreatedAt: time.Now().In(TZ).Format("2006-01-02 15:04")}
 }
 
 func CreateCalendarHTML(start, now time.Time, dayEventsMap map[string]*DayEvents) error {
