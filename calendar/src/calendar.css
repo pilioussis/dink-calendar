@@ -86,6 +86,7 @@
 }
 
 .day-in-past {
+    height: 10px;
     opacity: 0;
 }
 
