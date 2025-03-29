@@ -12,5 +12,4 @@ scp ./out/dither.bmp dink:/home/dink/prog/dink-calendar/calendar/out/
 
 echo "Run command"
 ssh dink 'cd /home/dink/prog/dink-calendar/draw && python draw.py /home/dink/prog/dink-calendar/calendar/out/dither.bmp'
-# ssh dink 'cd /home/dink/prog/e-Paper/RaspberryPi_JetsonNano/python/examples && python3 epd_7in3e_test.py'
 

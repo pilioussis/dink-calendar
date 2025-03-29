@@ -33,8 +33,8 @@
     align-items: center;
     background-image: url("back.png");
     /* background-color: var(--background); */
-    background-size: 50%;
-    background-repeat: repeat;
+    background-repeat: repeat-y;
+    background-size: 100% auto;
 }
 
 .weeks {
@@ -65,11 +65,11 @@
 .day {
     width: calc(100% / 7);
     min-height: 180px;
-    border-left-width: 0px;
+    /* border-left-width: 0px; */
     border-bottom-width: 1px;
     border-style: solid;
     border-color: transparent;
-    border-right-color: var(--blue-grid-light);
+    border-left-color: var(--blue-grid-light);
     border-top-color: var(--blue-grid-light);
     padding: 4px 4px 4px 4px;
 
@@ -106,9 +106,9 @@
     line-height: 15px;
     color: var(--month-color);
     position: absolute;
-    border: 2px solid var(--month-color);
+    border: 3px solid var(--month-color);
     border-radius: 2px;
-    padding: 6px 5px 0px;
+    padding: 3px 5px 1px;
     font-style: italic;
     margin-top: 3px;
 }
@@ -229,45 +229,32 @@
     margin-left: -3px;
 }
 
-.day:nth-child(5) {
+.day:nth-child(6) {
     /* background-color: #f0e5de; */
-    border-right-color: var(--border-weekend);
-    border-right-width: 4px;
+    border-left-color: var(--border-weekend);
+    border-left-width: 4px;
     /* border-top-color: var(--border-weekend); */
 }
 
 .day:first-child {
-    border-left-color: var(--blue-grid-light);
-    border-left-width: 1px;
+    /* border-left-color: var(--blue-grid-light); */
+    border-left-width: 0px;
 }
 
 .week:last-child > .day {
     border-bottom-color: var(--blue-grid-light);
 }
 
-.day.month-boundary-right {
-    border-right: 4px solid var(--month-color);
+.day.month-boundary-left {
+    border-left: 4px solid var(--month-color);
 }
 
 .day.month-boundary-top {
     border-top: 4px solid var(--month-color);
 }
 
-
-.week:first-child > .day:first-child {
-    border-top-left-radius: var(--corder-radius);
-}
-
-.week:first-child > .day:last-child {
-    border-top-right-radius: var(--corder-radius);
-}
-
-.week:last-child > .day:first-child {
-    border-bottom-left-radius: var(--corder-radius);
-}
-
-.week:last-child > .day:last-child {
-    border-bottom-right-radius: var(--corder-radius);
+.week:first-child > .day {
+    border-top: 0px;
 }
 
 

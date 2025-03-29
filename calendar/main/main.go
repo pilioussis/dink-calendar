@@ -44,16 +44,16 @@ type MultiDayEvent struct {
 }
 
 type Day struct {
-	Date               time.Time
-	MonthBoundaryRight bool
-	MonthBoundaryTop   bool
-	IsToday            bool
-	IsPast             bool
-	SameDayEvents      []*SameDayEvent
-	MultiDayEvents     []*MultiDayEvent
-	MultiDayMax        int
-	MonthLabel         string
-	Holiday            string // Is "" if not holiday
+	Date              time.Time
+	MonthBoundaryLeft bool
+	MonthBoundaryTop  bool
+	IsToday           bool
+	IsPast            bool
+	SameDayEvents     []*SameDayEvent
+	MultiDayEvents    []*MultiDayEvent
+	MultiDayMax       int
+	MonthLabel        string
+	Holiday           string // Is "" if not holiday
 }
 
 type Week struct {
@@ -120,9 +120,9 @@ func generateCalendar(start, now time.Time, dayEventsMap map[string]*DayEvents) 
 	for w := 0; w < len(weeks); w++ {
 		for d := 0; d < len(weeks[w].Days); d++ {
 			// Check horizontal boundary
-			if d < 6 {
-				if weeks[w].Days[d].Date.Month() != weeks[w].Days[d+1].Date.Month() {
-					weeks[w].Days[d].MonthBoundaryRight = true
+			if d >= 1 {
+				if weeks[w].Days[d-1].Date.Month() != weeks[w].Days[d].Date.Month() {
+					weeks[w].Days[d].MonthBoundaryLeft = true
 				}
 			}
 			// Check vertical boundary
