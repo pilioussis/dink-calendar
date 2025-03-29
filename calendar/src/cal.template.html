@@ -11,7 +11,7 @@
     {{ range .Weeks }}
       <div class="week">
       {{ range $day := .Days }}
-        <div class="day {{ if .MonthBoundaryRight }}month-boundary-right{{ end }} {{ if .MonthBoundaryTop }}month-boundary-top{{ end }} {{ if .IsToday }}today{{ end }}">
+        <div class="day {{ if .MonthBoundaryRight }}month-boundary-right{{ end }} {{ if .MonthBoundaryTop }}month-boundary-top{{ end }} {{ if .IsToday }}today{{ end }} {{ if .IsPast }}day-in-past{{ end }}">
           <div class="day-border {{ if.Holiday}} holiday-border {{ end }}">
             <div class="day-top-content">
               {{ if .MonthLabel }}

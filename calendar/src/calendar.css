@@ -1,7 +1,7 @@
 :root {
     --blue-grid-light: #001eff;
     --border-weekend: #ff0000;
-    --month-color: #d2ff30;
+    --month-color: #72ff30;
     --holiday-color: #ddddcc;
     --today-background: #ff0000;;
     --today-text: #ffffff;
@@ -31,8 +31,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* background-image: url("back.png"); */
-    background-color: var(--background);
+    background-image: url("back.png");
+    /* background-color: var(--background); */
     background-size: 50%;
     background-repeat: repeat;
 }
@@ -76,6 +76,7 @@
     justify-content: space-between;
     font-size: 25px;
     line-height: var(--row-height);
+    background-color: var(--background);
 }
 
 .day-border {
@@ -83,6 +84,10 @@
     flex-grow: 1;
     border: 4px solid transparent;
     padding: 3px 3px 3px 3px;
+}
+
+.day-in-past {
+    opacity: 0;
 }
 
 .holiday-border {
@@ -183,6 +188,8 @@
     display: inline;
     max-height: calc(var(--row-height) * 2);
     overflow: hidden;
+    word-break: break-all;
+    hyphens: none;
 }
 
 .time {

@@ -48,6 +48,7 @@ type Day struct {
 	MonthBoundaryRight bool
 	MonthBoundaryTop   bool
 	IsToday            bool
+	IsPast             bool
 	SameDayEvents      []*SameDayEvent
 	MultiDayEvents     []*MultiDayEvent
 	MultiDayMax        int
@@ -99,6 +100,7 @@ func generateCalendar(start, now time.Time, dayEventsMap map[string]*DayEvents) 
 			days = append(days, Day{
 				Date:           currDay,
 				IsToday:        currDay.Format("2006-01-02") == now.Format("2006-01-02"),
+				IsPast:         currDay.Before(now),
 				SameDayEvents:  dayEvents.SameDay,
 				MultiDayEvents: dayEvents.MultiDay,
 				MultiDayMax:    dayEvents.MultiDayMax,
@@ -237,7 +239,7 @@ func getScreenshot() error {
 	return nil
 }
 
-func create() {
+func create() error {
 	slog.Info("Started")
 
 	if true {
@@ -252,26 +254,23 @@ func create() {
 
 		dayEventsMap, err := getData(start, end, createStubEvents, useCache)
 		if err != nil {
-			slog.Error("Error getting data", "error", err)
-			panic(err)
+			return fmt.Errorf("error getting data: %w", err)
 		}
 		err = CreateCalendarHTML(start, now, dayEventsMap)
 		if err != nil {
-			slog.Error("Error creating html", "error", err)
-			panic(err)
+			return fmt.Errorf("error creating html: %w", err)
 		}
 		err = getScreenshot()
 		if err != nil {
-			slog.Error("Error getting screenshot", "error", err)
-			panic(err)
+			return fmt.Errorf("error getting screenshot: %w", err)
 		}
 	}
 
 	err := Dither(FULL_COLOR_PATH, DITHERED_PATH)
 	if err != nil {
-		slog.Error("Error dithering", "error", err)
-		panic(err)
+		return fmt.Errorf("error dithering: %w", err)
 	}
+	return nil
 }
 
 func copyFile(inputFile, outputFile string) {
@@ -306,19 +305,30 @@ func runShellCommand(dir, command string, args ...string) error {
 }
 
 func serve() {
+	first := true
 	for {
 		slog.Info("Running loop")
-		create()
+		if !first {
+			slog.Info("Waiting", "WAIT", LOOP_WAIT)
+			time.Sleep(LOOP_WAIT)
+		}
+		first = false
+		err := create()
+		if err != nil {
+			slog.Error("Error creating calendar", "error", err)
+			continue
+		}
 
 		ditheredFullPath, err := filepath.Abs(DITHERED_PATH)
 		if err != nil {
 			slog.Error("Error getting absolute path for DITHERED_PATH", "error", err)
 			panic(err)
 		}
-		runShellCommand("../draw", "python", "draw.py", ditheredFullPath)
-
-		slog.Info("Waiting", "WAIT", LOOP_WAIT)
-		time.Sleep(LOOP_WAIT)
+		err = runShellCommand("../draw", "python", "draw.py", ditheredFullPath)
+		if err != nil {
+			slog.Error("Error running shell command", "error", err)
+			continue
+		}
 	}
 }
 
@@ -333,6 +343,10 @@ func main() {
 	case "serve":
 		serve()
 	default:
-		create()
+		err := create()
+		if err != nil {
+			slog.Error("Error creating calendar", "error", err)
+			os.Exit(1)
+		}
 	}
 }
